@@ -1,9 +1,9 @@
 package io.tolgee.component.machineTranslation.metadata
 
 data class Metadata(
-  val examples: List<ExampleItem> = emptyList(),
-  val closeItems: List<ExampleItem> = emptyList(),
-  val keyDescription: String?,
-  val projectDescription: String?,
-  val languageDescription: String?,
+  val promptId: Long,
+  val keyId: Long,
+  val projectId: Long,
+  val targetLanguageId: Long,
+  val sourceLanguageId: Long,
 )

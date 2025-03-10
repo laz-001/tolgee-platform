@@ -3,8 +3,6 @@ package io.tolgee.api.v2.controllers.translationSuggestionController
 import io.tolgee.ProjectAuthControllerTest
 import io.tolgee.component.EeSubscriptionInfoProvider
 import io.tolgee.component.machineTranslation.MtValueProvider
-import io.tolgee.component.machineTranslation.providers.tolgee.EeTolgeeTranslateApiService
-import io.tolgee.component.machineTranslation.providers.tolgee.TolgeeTranslateParams
 import io.tolgee.constants.MtServiceType
 import io.tolgee.development.testDataBuilder.data.SuggestionTestData
 import io.tolgee.dtos.request.SuggestRequestDto
@@ -47,7 +45,7 @@ class TranslationSuggestionWithCacheTest : ProjectAuthControllerTest("/v2/projec
   @Autowired
   override lateinit var cacheManager: CacheManager
 
-  lateinit var tolgeeTranslateParamsCaptor: KArgumentCaptor<TolgeeTranslateParams>
+  lateinit var tolgeeTranslateParamsCaptor: KArgumentCaptor<LLMParams>
 
   @BeforeEach
   fun setup() {
@@ -81,7 +79,7 @@ class TranslationSuggestionWithCacheTest : ProjectAuthControllerTest("/v2/projec
     ).thenAnswer {
       MtValueProvider.MtResult(
         "Translated with Tolgee Translator",
-        ((it.arguments[0] as? TolgeeTranslateParams)?.text?.length ?: 0) * 100,
+        ((it.arguments[0] as? LLMParams)?.text?.length ?: 0) * 100,
       )
     }
   }

@@ -1,6 +1,9 @@
 package io.tolgee.component.machineTranslation.providers
 
 import io.tolgee.component.machineTranslation.MtValueProvider
+import io.tolgee.component.machineTranslation.TranslationApiRateLimitException
+import io.tolgee.constants.Message
+import io.tolgee.exceptions.BadRequestException
 
 abstract class AbstractMtValueProvider : MtValueProvider {
   private val String.toSuitableTag: String?
@@ -29,12 +32,20 @@ abstract class AbstractMtValueProvider : MtValueProvider {
       )
     }
 
-    return translateViaProvider(
-      params.apply {
-        sourceLanguageTag = suitableSourceTag
-        targetLanguageTag = suitableTargetTag
-      },
-    )
+    try {
+      return translateViaProvider(
+        params.apply {
+          sourceLanguageTag = suitableSourceTag
+          targetLanguageTag = suitableTargetTag
+        },
+      )
+    } catch (e: TranslationApiRateLimitException) {
+      if (params.isBatch) {
+        throw e
+      } else {
+        throw BadRequestException(Message.LLM_RATE_LIMITED)
+      }
+    }
   }
 
   /**
