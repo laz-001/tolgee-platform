@@ -102,6 +102,7 @@ declare namespace DataCy {
         "api-key-list-item-regenerate-button" |
         "api-keys-create-edit-dialog" |
         "api-keys-project-select-item" |
+        "assigned-projects-select" |
         "assignee-search-select-popover" |
         "assignee-select" |
         "auto-avatar-img" |
@@ -248,6 +249,7 @@ declare namespace DataCy {
         "global-plus-button" |
         "global-search-field" |
         "global-user-menu-button" |
+        "glossary-base-language-select" |
         "import-conflict-resolution-dialog" |
         "import-conflicts-not-resolved-dialog" |
         "import-conflicts-not-resolved-dialog-cancel-button" |
