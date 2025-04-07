@@ -3,8 +3,12 @@ package io.tolgee.ee
 import io.tolgee.ProjectAuthControllerTest
 import io.tolgee.api.SubscriptionStatus
 import io.tolgee.component.machineTranslation.MtValueProvider
+import io.tolgee.component.machineTranslation.providers.AwsMtValueProvider
+import io.tolgee.component.machineTranslation.providers.GoogleTranslationProvider
+import io.tolgee.component.machineTranslation.providers.ProviderTranslateParams
 import io.tolgee.constants.Feature
 import io.tolgee.development.testDataBuilder.data.SuggestionTestData
+import io.tolgee.ee.component.LLMTranslationProviderEeImpl
 import io.tolgee.ee.model.EeSubscription
 import io.tolgee.ee.repository.EeSubscriptionRepository
 import io.tolgee.fixtures.andAssertThatJson
@@ -27,7 +31,7 @@ class EeTolgeeTranslatorControllerTest : ProjectAuthControllerTest("/v2/projects
 
   @Autowired
   @MockBean
-  private lateinit var eeTolgeeTranslateApiService: EeTolgeeTranslateApiServiceImpl
+  private lateinit var llmTranslationProviderEeImpl: LLMTranslationProviderEeImpl
 
   @Autowired
   private lateinit var eeSubscriptionRepository: EeSubscriptionRepository
@@ -66,11 +70,11 @@ class EeTolgeeTranslatorControllerTest : ProjectAuthControllerTest("/v2/projects
     internalProperties.fakeMtProviders = false
 
     whenever(
-      eeTolgeeTranslateApiService.translate(any()),
+      llmTranslationProviderEeImpl.translate(any()),
     ).thenAnswer {
       MtValueProvider.MtResult(
         "Translated with Tolgee Translator",
-        ((it.arguments[0] as? LLMParams)?.text?.length ?: 0) * 100,
+        ((it.arguments[0] as? ProviderTranslateParams)?.text?.length ?: 0) * 100,
         "OMG!",
       )
     }
@@ -85,7 +89,7 @@ class EeTolgeeTranslatorControllerTest : ProjectAuthControllerTest("/v2/projects
         }
       }
 
-      Mockito.mockingDetails(eeTolgeeTranslateApiService).invocations.assert.hasSize(1)
+      Mockito.mockingDetails(llmTranslationProviderEeImpl).invocations.assert.hasSize(1)
     }
   }
 }

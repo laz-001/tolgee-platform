@@ -3,9 +3,11 @@ package io.tolgee.api.v2.controllers.translationSuggestionController
 import io.tolgee.ProjectAuthControllerTest
 import io.tolgee.component.EeSubscriptionInfoProvider
 import io.tolgee.component.machineTranslation.MtValueProvider
+import io.tolgee.component.machineTranslation.providers.ProviderTranslateParams
 import io.tolgee.constants.MtServiceType
 import io.tolgee.development.testDataBuilder.data.SuggestionTestData
 import io.tolgee.dtos.request.SuggestRequestDto
+import io.tolgee.ee.component.LLMTranslationProviderEeImpl
 import io.tolgee.fixtures.andIsOk
 import io.tolgee.testing.annotations.ProjectJWTAuthTestMethod
 import org.junit.jupiter.api.AfterEach
@@ -35,7 +37,7 @@ class TranslationSuggestionWithCacheTest : ProjectAuthControllerTest("/v2/projec
 
   @Autowired
   @MockBean
-  lateinit var eeTolgeeTranslateApiService: EeTolgeeTranslateApiService
+  lateinit var llmTranslationProviderEeImpl: LLMTranslationProviderEeImpl
 
   @Autowired
   @MockBean
@@ -45,11 +47,11 @@ class TranslationSuggestionWithCacheTest : ProjectAuthControllerTest("/v2/projec
   @Autowired
   override lateinit var cacheManager: CacheManager
 
-  lateinit var tolgeeTranslateParamsCaptor: KArgumentCaptor<LLMParams>
+  lateinit var tolgeeTranslateParamsCaptor: KArgumentCaptor<ProviderTranslateParams>
 
   @BeforeEach
   fun setup() {
-    Mockito.clearInvocations(eeTolgeeTranslateApiService)
+    Mockito.clearInvocations(llmTranslationProviderEeImpl)
     setForcedDate(Date())
     initTestData()
     initMachineTranslationProperties(1000)
@@ -73,13 +75,13 @@ class TranslationSuggestionWithCacheTest : ProjectAuthControllerTest("/v2/projec
     tolgeeTranslateParamsCaptor = argumentCaptor()
 
     whenever(
-      eeTolgeeTranslateApiService.translate(
+      llmTranslationProviderEeImpl.translate(
         tolgeeTranslateParamsCaptor.capture(),
       ),
     ).thenAnswer {
       MtValueProvider.MtResult(
         "Translated with Tolgee Translator",
-        ((it.arguments[0] as? LLMParams)?.text?.length ?: 0) * 100,
+        ((it.arguments[0] as? ProviderTranslateParams)?.text?.length ?: 0) * 100,
       )
     }
   }

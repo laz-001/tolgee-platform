@@ -7,5 +7,5 @@ data class MtBatchItemParams(
   val baseTranslationText: String?,
   val targetLanguageId: Long,
   val service: MtServiceType,
-  val promptId: Long?,
+  val promptId: Long? = null,
 )
