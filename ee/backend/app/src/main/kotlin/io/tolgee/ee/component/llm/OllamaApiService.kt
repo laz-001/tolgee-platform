@@ -1,7 +1,5 @@
 package io.tolgee.ee.component.llm
 
-import io.tolgee.component.CurrentDateProvider
-import io.tolgee.component.bucket.TokenBucketManager
 import io.tolgee.component.machineTranslation.MtValueProvider
 import io.tolgee.configuration.tolgee.machineTranslation.LLMProviderInterface
 import io.tolgee.dtos.LLMParams
@@ -20,8 +18,6 @@ import java.util.*
 @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
 class OllamaApiService(
   private val restTemplate: RestTemplate,
-  private val tokenBucketManager: TokenBucketManager,
-  private val currentDateProvider: CurrentDateProvider,
 ) : Logging {
   fun translate(
     params: LLMParams,

@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.tolgee.component.CurrentDateProvider
-import io.tolgee.component.bucket.TokenBucketManager
 import io.tolgee.component.machineTranslation.MtValueProvider
 import io.tolgee.configuration.tolgee.machineTranslation.LLMProviderInterface
 import io.tolgee.constants.Message
@@ -29,8 +27,6 @@ import java.util.*
 @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
 class OpenaiApiService(
   private val restTemplate: RestTemplate,
-  private val tokenBucketManager: TokenBucketManager,
-  private val currentDateProvider: CurrentDateProvider,
 ) : Logging {
   fun translate(
     params: LLMParams,
