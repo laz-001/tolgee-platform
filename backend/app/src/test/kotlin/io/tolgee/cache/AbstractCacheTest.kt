@@ -2,11 +2,9 @@ package io.tolgee.cache
 
 import io.tolgee.AbstractSpringTest
 import io.tolgee.component.machineTranslation.MtValueProvider
-import io.tolgee.component.machineTranslation.TranslationParams
 import io.tolgee.component.machineTranslation.providers.AwsMtValueProvider
 import io.tolgee.component.machineTranslation.providers.GoogleTranslationProvider
 import io.tolgee.constants.Caches
-import io.tolgee.constants.MtServiceType
 import io.tolgee.model.Organization
 import io.tolgee.model.Permission
 import io.tolgee.model.Project
@@ -14,7 +12,6 @@ import io.tolgee.model.UserAccount
 import io.tolgee.repository.PermissionRepository
 import io.tolgee.repository.ProjectRepository
 import io.tolgee.repository.UserAccountRepository
-import io.tolgee.service.machineTranslation.MtServiceInfo
 import io.tolgee.service.organization.OrganizationService
 import io.tolgee.testing.assertions.Assertions
 import org.junit.jupiter.api.BeforeEach

@@ -3,8 +3,6 @@ package io.tolgee.ee
 import io.tolgee.ProjectAuthControllerTest
 import io.tolgee.api.SubscriptionStatus
 import io.tolgee.component.machineTranslation.MtValueProvider
-import io.tolgee.component.machineTranslation.providers.AwsMtValueProvider
-import io.tolgee.component.machineTranslation.providers.GoogleTranslationProvider
 import io.tolgee.component.machineTranslation.providers.ProviderTranslateParams
 import io.tolgee.constants.Feature
 import io.tolgee.development.testDataBuilder.data.SuggestionTestData

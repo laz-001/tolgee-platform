@@ -14,7 +14,6 @@ import io.tolgee.constants.MtServiceType
 import io.tolgee.development.testDataBuilder.data.SuggestionTestData
 import io.tolgee.dtos.request.SuggestRequestDto
 import io.tolgee.ee.component.LLMTranslationProviderEeImpl
-import io.tolgee.ee.service.LLMProviderService
 import io.tolgee.fixtures.*
 import io.tolgee.model.mtServiceConfig.Formality
 import io.tolgee.testing.annotations.ProjectJWTAuthTestMethod
