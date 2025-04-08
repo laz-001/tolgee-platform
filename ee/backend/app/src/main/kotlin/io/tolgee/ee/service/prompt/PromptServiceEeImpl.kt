@@ -412,14 +412,16 @@ class PromptServiceEeImpl(
     val pattern = Regex("\\[\\[screenshot_(full|small)_(\\d+)]]")
 
     val parts = pattern.splitWithMatches(prompt)
-    return parts.mapNotNull(
-      fun(it): LLMParams.Companion.LlmMessage? {
-        if (pattern.matches(it)) {
-          val match = pattern.matchEntire(it) ?: throw Error()
-          // Extract size and id from the match groups
-          val size = match.groups[1]!!.value // full or small
-          val id = match.groups[2]!!.value.toLong() // number
-          val screenshot = key.keyScreenshotReferences.find { it.screenshot.id == id }?.screenshot ?: return null
+    return parts.mapNotNull {
+      if (pattern.matches(it)) {
+        val match = pattern.matchEntire(it) ?: throw Error()
+        // Extract size and id from the match groups
+        val size = match.groups[1]!!.value // full or small
+        val id = match.groups[2]!!.value.toLong() // number
+        val screenshot = key.keyScreenshotReferences.find { it.screenshot.id == id }?.screenshot
+        if (screenshot == null) {
+          null
+        } else {
           val file =
             if (size === "full") {
               screenshot.filename
@@ -444,18 +446,18 @@ class PromptServiceEeImpl(
             image = converter.highlightKeys(screenshot, listOf(key.id)).toByteArray()
           }
 
-          return LLMParams.Companion.LlmMessage(
+          LLMParams.Companion.LlmMessage(
             type = LLMParams.Companion.LlmMessageType.IMAGE,
             image = image,
           )
-        } else {
-          return LLMParams.Companion.LlmMessage(
-            type = LLMParams.Companion.LlmMessageType.TEXT,
-            text = it,
-          )
         }
-      },
-    )
+      } else {
+        LLMParams.Companion.LlmMessage(
+          type = LLMParams.Companion.LlmMessageType.TEXT,
+          text = it,
+        )
+      }
+    }
   }
 
   // Helper function to split and keep matches
