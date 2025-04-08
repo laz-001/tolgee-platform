@@ -65,7 +65,7 @@ class MachineTranslationChunkProcessor(
 //    if (services.map { it?.serviceType }.contains(MtServiceType.TOLGEE)) {
 //      return 2
 //    }
-    return 5
+    return 1
   }
 
   override fun getTargetItemType(): Class<BatchTranslationTargetItem> {

@@ -137,6 +137,7 @@ class PromptServiceEeImpl(
     return list.mapIndexed { index, _ -> encodeScreenshot(index.toLong(), type) }.joinToString("\n")
   }
 
+  @Transactional
   fun getVariables(
     projectId: Long,
     keyId: Long?,
@@ -367,6 +368,7 @@ class PromptServiceEeImpl(
     return lazyMap
   }
 
+  @Transactional
   fun getPrompt(
     projectId: Long,
     data: PromptRunDto,
@@ -399,11 +401,12 @@ class PromptServiceEeImpl(
     }
   }
 
+  @Transactional
   fun getLlmMessages(
     prompt: String,
-    data: PromptRunDto,
+    keyId: Long,
   ): List<LLMParams.Companion.LlmMessage> {
-    val key = keyService.find(data.keyId) ?: throw NotFoundException(Message.KEY_NOT_FOUND)
+    val key = keyService.find(keyId) ?: throw NotFoundException(Message.KEY_NOT_FOUND)
 
     val pattern = Regex("\\[\\[screenshot_(full|small)_(\\d+)]]")
 
@@ -478,16 +481,31 @@ class PromptServiceEeImpl(
   fun runPrompt(
     organizationId: Long,
     params: LLMParams,
-    promptRunDto: PromptRunDto,
+    provider: String,
     priority: LLMProviderPriority?,
-  ): MtValueProvider.MtResult {
-    try {
-      return providerService.callProvider(organizationId, promptRunDto.provider, params, priority)
+  ): PromptService.Companion.PromptResult {
+    val result = try {
+      providerService.callProvider(organizationId, provider, params, priority)
     } catch (e: ResourceAccessException) {
       throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
     } catch (e: HttpClientErrorException) {
       throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
     }
+
+    result.parsedJson = jacksonObjectMapper().readValue<JsonNode>(result.response)
+
+    return result
+  }
+
+  fun getTranslationFromPromptResult(result: PromptService.Companion.PromptResult): MtValueProvider.MtResult {
+    val json = result.parsedJson ?: throw BadRequestException(Message.LLM_PROVIDER_NOT_RETURNED_JSON)
+    val translation = json.get("output").asText() ?: throw BadRequestException(Message.LLM_PROVIDER_NOT_RETURNED_JSON)
+    return MtValueProvider.MtResult(
+      translation,
+      contextDescription = json.get("contextDescription").asText(),
+      price = 0,
+      usage = result.usage,
+    )
   }
 
   @Transactional
@@ -498,19 +516,9 @@ class PromptServiceEeImpl(
   ): MtValueProvider.MtResult {
     val project = projectService.get(projectId)
     val prompt = getPrompt(projectId, data)
-    val messages = getLlmMessages(prompt, data)
-    val response = runPrompt(project.organizationOwner.id, LLMParams(messages), data, priority)
-    val json =
-      response.translated?.let { jacksonObjectMapper().readValue<JsonNode>(it) } ?: throw BadRequestException(
-        Message.LLM_PROVIDER_NOT_RETURNED_JSON,
-      )
-    val translation = json.get("output").asText() ?: throw BadRequestException(Message.LLM_PROVIDER_NOT_RETURNED_JSON)
-    return MtValueProvider.MtResult(
-      translation,
-      contextDescription = json.get("contextDescription").asText(),
-      price = 0,
-      usage = response.usage,
-    )
+    val messages = getLlmMessages(prompt, data.keyId)
+    val result = runPrompt(project.organizationOwner.id, LLMParams(messages), data.provider, priority)
+    return getTranslationFromPromptResult(result)
   }
 
   override fun translateAndUpdateTranslation(

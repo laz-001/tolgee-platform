@@ -85,18 +85,19 @@ class PromptController(
     @Valid @RequestBody promptRunDto: PromptRunDto,
   ): PromptResponseDto {
     val prompt = promptService.getPrompt(projectHolder.project.id, promptRunDto)
-    val messages = promptService.getLlmMessages(prompt, promptRunDto)
+    val messages = promptService.getLlmMessages(prompt, promptRunDto.keyId)
     val response =
       promptService.runPrompt(
         projectHolder.project.organizationOwnerId,
         LLMParams(messages),
-        promptRunDto,
+        promptRunDto.provider,
         LLMProviderPriority.HIGH,
       )
     return PromptResponseDto(
       prompt,
-      response.translated ?: "",
-      response.usage,
+      response.response,
+      response.usage?.totalTokens ?: 0L,
+      usage = response.usage
     )
   }
 

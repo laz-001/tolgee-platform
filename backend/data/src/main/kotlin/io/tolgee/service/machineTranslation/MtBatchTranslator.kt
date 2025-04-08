@@ -7,9 +7,11 @@ import io.tolgee.formats.forceEscapePluralForms
 import io.tolgee.formats.toIcuPluralString
 import io.tolgee.formats.unescapePluralForms
 import io.tolgee.helpers.TextHelper
+import org.springframework.context.ApplicationContext
 
 class MtBatchTranslator(
   private val context: MtTranslatorContext,
+  private val applicationContext: ApplicationContext
 ) {
   fun translate(batch: List<MtBatchItemParams>): List<MtTranslatorResult> {
     val result = mutableListOf<MtTranslatorResult>()
@@ -165,19 +167,26 @@ class MtBatchTranslator(
     val pluralFormsWithReplacedParam =
       if (isPlural) context.getPluralFormsReplacingReplaceParam(baseTranslationText) else null
 
+
+    val provider = applicationContext.getBean(item.service.providerClass)
+    val metadata = provider.getMetadata(
+      context.project.organizationOwnerId,
+      context.project.id,
+      item.keyId,
+      item.targetLanguageId,
+      item.promptId
+    )
+
     return TranslationParams(
       text = withReplacedParams,
       textRaw = baseTranslationText,
       keyName = context.keys[item.keyId]?.name,
       sourceLanguageTag = context.baseLanguage.tag,
       targetLanguageTag = targetLanguageTag,
-      sourceLangaugeId = context.baseLanguage.id,
-      targetLangaugeId = item.targetLanguageId,
       serviceInfo = context.getServiceInfo(item.targetLanguageId, item.service),
+      metadata = metadata,
       isBatch = context.isBatch,
       pluralForms = pluralForms?.forms,
-      keyId = item.keyId,
-      projectId = context.project.id,
       pluralFormExamples =
         pluralFormsWithReplacedParam?.let {
           PluralTranslationUtil.getSourceExamples(

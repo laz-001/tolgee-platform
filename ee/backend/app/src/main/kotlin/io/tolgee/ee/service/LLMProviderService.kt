@@ -1,7 +1,6 @@
 package io.tolgee.ee.service
 
 import io.tolgee.component.CurrentDateProvider
-import io.tolgee.component.machineTranslation.MtValueProvider
 import io.tolgee.component.machineTranslation.TranslationApiRateLimitException
 import io.tolgee.configuration.tolgee.machineTranslation.LLMProperties
 import io.tolgee.constants.Caches
@@ -9,6 +8,7 @@ import io.tolgee.constants.Message
 import io.tolgee.dtos.LLMParams
 import io.tolgee.dtos.LLMProviderDto
 import io.tolgee.dtos.request.llmProvider.LLMProviderRequest
+import io.tolgee.ee.component.llm.ClaudeApiService
 import io.tolgee.ee.component.llm.OllamaApiService
 import io.tolgee.ee.component.llm.OpenaiApiService
 import io.tolgee.exceptions.BadRequestException
@@ -17,6 +17,7 @@ import io.tolgee.model.LLMProvider
 import io.tolgee.model.enums.LLMProviderPriority
 import io.tolgee.model.enums.LLMProviderType
 import io.tolgee.repository.LLMProviderRepository
+import io.tolgee.service.PromptService
 import io.tolgee.service.organization.OrganizationService
 import org.springframework.cache.Cache
 import org.springframework.cache.CacheManager
@@ -34,6 +35,7 @@ class LLMProviderService(
   private val ollamaApiService: OllamaApiService,
   private val cacheManager: CacheManager,
   private val currentDateProvider: CurrentDateProvider,
+  private val claudeApiService: ClaudeApiService,
 ) {
   private val cache: Cache by lazy { cacheManager.getCache(Caches.LLM_PROVIDERS) }
   private var lastUsedMap: MutableMap<String, Long> = mutableMapOf()
@@ -96,17 +98,17 @@ class LLMProviderService(
     provider: String,
     params: LLMParams,
     priority: LLMProviderPriority? = null,
-  ): MtValueProvider.MtResult {
+  ): PromptService.Companion.PromptResult {
     while (true) {
       val providerConfig = getProviderByName(organizationId, provider, priority)
       try {
         return when (providerConfig.type) {
           LLMProviderType.OPENAI -> openaiApiService.translate(params, providerConfig)
           LLMProviderType.OLLAMA -> ollamaApiService.translate(params, providerConfig)
+          LLMProviderType.CLAUDE -> claudeApiService.translate(params, providerConfig)
         }
       } catch (e: TooManyRequests) {
         suspendProvider(provider, providerConfig.id, 60 * 1000)
-        System.out.println("suspending: ${providerConfig.id}")
       }
     }
   }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.tolgee.component.machineTranslation.MtValueProvider
 import io.tolgee.configuration.tolgee.machineTranslation.LLMProviderInterface
 import io.tolgee.constants.Message
 import io.tolgee.dtos.LLMParams
@@ -25,7 +26,7 @@ import java.util.*
 
 @Component
 @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-class OpenaiApiService(
+class ClaudeApiService(
   private val restTemplate: RestTemplate,
 ) : Logging {
   fun translate(
@@ -34,9 +35,10 @@ class OpenaiApiService(
   ): PromptService.Companion.PromptResult {
     val headers = HttpHeaders()
     headers.set("content-type", "application/json")
-    headers.set("api-key", config.apiKey)
+    headers.set("anthropic-version", "2023-06-01")
+    headers.set("x-api-key", config.apiKey)
 
-    val messages = mutableListOf<OpenaiMessage>()
+    val messages = mutableListOf<RequestMessage>()
 
     var promptHasJsonInside = false
 
@@ -45,24 +47,22 @@ class OpenaiApiService(
         it.type == LLMParams.Companion.LlmMessageType.TEXT &&
         it.text != null
       ) {
-        messages.add(OpenaiMessage(role = "user", content = it.text!!))
+        messages.add(RequestMessage(role = "user", content = it.text!!))
         promptHasJsonInside = promptHasJsonInside || it.text!!.lowercase().contains("json")
       } else if (
         it.type == LLMParams.Companion.LlmMessageType.IMAGE &&
         it.image != null
       ) {
         messages.add(
-          OpenaiMessage(
+          RequestMessage(
             role = "user",
             content =
               listOf(
-                OpenaiMessageContent(
-                  type = "image_url",
-                  image_url =
-                    OpenaiImageUrl(
-                      "data:image/jpeg;base64,${
-                        Base64.getEncoder().encodeToString(it.image)
-                      }",
+                RequestMessageContent(
+                  type = "image",
+                  source =
+                    RequestImage(
+                      data = Base64.getEncoder().encodeToString(it.image),
                     ),
                 ),
               ),
@@ -72,13 +72,13 @@ class OpenaiApiService(
     }
 
     val requestBody =
-      OpenaiRequestBody(
+      RequestBody(
         messages = messages,
         response_format =
           if (promptHasJsonInside) {
             when (config.format) {
-              "json_object" -> OpenaiResponseFormat(type = "json_object", json_schema = null)
-              "json_schema" -> OpenaiResponseFormat()
+              "json_object" -> ResponseFormat(type = "json_object", json_schema = null)
+              "json_schema" -> ResponseFormat()
               else -> null
             }
           } else {
@@ -89,10 +89,10 @@ class OpenaiApiService(
 
     val request = HttpEntity(requestBody, headers)
 
-    val response: ResponseEntity<OpenaiResponse> =
+    val response: ResponseEntity<ResponseBody> =
       try {
-        restTemplate.exchange<OpenaiResponse>(
-          "${config.apiUrl}/${config.deployment}/completions?api-version=2024-12-01-preview",
+        restTemplate.exchange<ResponseBody>(
+          "${config.apiUrl}/v1/messages",
           HttpMethod.POST,
           request,
         )
@@ -104,12 +104,11 @@ class OpenaiApiService(
       }
 
     return PromptService.Companion.PromptResult(
-      response = response.body?.choices?.first()?.message?.content ?: throw RuntimeException(response.toString()),
+      response.body?.content?.first()?.text ?: throw RuntimeException(response.toString()),
       usage =
-        response.body?.usage?.total_tokens?.let {
+        response.body?.usage?.input_tokens?.let {
           PromptResponseUsageDto(
             totalTokens = it.toLong(),
-            cachedTokens = response.body?.usage?.prompt_tokens_details?.cached_tokens?.toLong(),
           )
         },
     )
@@ -127,32 +126,33 @@ class OpenaiApiService(
    */
   companion object {
     @Suppress("unused")
-    class OpenaiRequestBody(
-      val max_completion_tokens: Long = 800,
+    class RequestBody(
+      val max_tokens: Long = 1000,
       val stream: Boolean = false,
       @JsonInclude(JsonInclude.Include.NON_NULL)
-      val response_format: OpenaiResponseFormat? = null,
-      val stop: Boolean? = null,
-      val messages: List<OpenaiMessage>,
+      val response_format: ResponseFormat? = null,
+      val messages: List<RequestMessage>,
       val model: String?,
       val temperature: Long? = 0,
     )
 
-    class OpenaiMessage(
+    class RequestMessage(
       val role: String,
       val content: Any,
     )
 
-    class OpenaiMessageContent(
+    class RequestMessageContent(
       val type: String,
-      val image_url: OpenaiImageUrl,
+      val source: RequestImage,
     )
 
-    class OpenaiImageUrl(
-      val url: String,
+    class RequestImage(
+      val type: String = "base64",
+      val media_type: String = "image/png",
+      val data: String,
     )
 
-    class OpenaiResponseFormat(
+    class ResponseFormat(
       val type: String = "json_schema",
       @JsonInclude(JsonInclude.Include.NON_NULL)
       val json_schema: Map<String, Any>? =
@@ -173,35 +173,18 @@ class OpenaiApiService(
         ),
     )
 
-    class OpenaiResponse(
-      val choices: List<OpenAiResponseChoice>,
-      val usage: OpenaiUsage,
+    class ResponseBody(
+      val content: List<ResponseMessage>,
+      val usage: ResponseUsage,
     )
 
-    class OpenAiResponseChoice(
-      val message: OpenAiResponseMessage,
+    class ResponseMessage(
+      val text: String,
     )
 
-    class OpenAiResponseMessage(
-      val content: String,
-    )
-
-    class OpenaiUsage(
-      val prompt_tokens: Int,
-      val completion_tokens: Int,
-      val total_tokens: Int,
-      val prompt_tokens_details: OpenaiPromptTokenDetails?,
-      val completion_tokens_details: OpenaiCompletionTokenDetails?,
-    )
-
-    class OpenaiPromptTokenDetails(
-      val cached_tokens: Int,
-    )
-
-    class OpenaiCompletionTokenDetails(
-      val reasoning_tokens: Int,
-      val accepted_prediction_tokens: Int,
-      val rejected_prediction_tokens: Int,
+    class ResponseUsage(
+      val input_tokens: Int,
+      val output_tokens: Int,
     )
   }
 }

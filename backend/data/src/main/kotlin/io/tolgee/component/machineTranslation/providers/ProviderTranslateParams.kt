@@ -1,6 +1,7 @@
 package io.tolgee.component.machineTranslation.providers
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.tolgee.component.machineTranslation.metadata.MtMetadata
 import io.tolgee.model.mtServiceConfig.Formality
 
 data class ProviderTranslateParams(
@@ -9,11 +10,7 @@ data class ProviderTranslateParams(
   val keyName: String?,
   var sourceLanguageTag: String,
   var targetLanguageTag: String,
-  var sourceLanguageId: Long,
-  var targetLanguageId: Long,
-  var promptId: Long?,
-  var projectId: Long,
-  var keyId: Long?,
+  var metadata: MtMetadata? = null,
   val formality: Formality? = null,
   /**
    * Whether translation is executed as a part of batch translation task
@@ -37,10 +34,7 @@ data class ProviderTranslateParams(
           keyName,
           sourceLanguageTag,
           targetLanguageTag,
-          sourceLanguageId,
-          targetLanguageId,
-          promptId,
-          projectId,
+          metadata,
           formality,
           pluralForms,
           pluralFormExamples,

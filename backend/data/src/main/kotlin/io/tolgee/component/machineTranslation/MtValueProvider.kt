@@ -1,5 +1,6 @@
 package io.tolgee.component.machineTranslation
 
+import io.tolgee.component.machineTranslation.metadata.MtMetadata
 import io.tolgee.component.machineTranslation.providers.ProviderTranslateParams
 import io.tolgee.dtos.response.prompt.PromptResponseUsageDto
 
@@ -38,4 +39,6 @@ interface MtValueProvider {
     }
     return LanguageTagConvertor.findSuitableTag(supportedLanguages!!, tag)
   }
+
+  fun getMetadata(organizationId: Long, projectId: Long, keyId: Long?, targetLanguageId: Long, promptId: Long?): MtMetadata?
 }

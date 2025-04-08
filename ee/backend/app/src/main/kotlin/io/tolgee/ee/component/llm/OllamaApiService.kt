@@ -3,6 +3,7 @@ package io.tolgee.ee.component.llm
 import io.tolgee.component.machineTranslation.MtValueProvider
 import io.tolgee.configuration.tolgee.machineTranslation.LLMProviderInterface
 import io.tolgee.dtos.LLMParams
+import io.tolgee.service.PromptService
 import io.tolgee.util.Logging
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
@@ -22,7 +23,7 @@ class OllamaApiService(
   fun translate(
     params: LLMParams,
     config: LLMProviderInterface,
-  ): MtValueProvider.MtResult {
+  ): PromptService.Companion.PromptResult {
     val headers = HttpHeaders()
     headers.set("content-type", "application/json")
 
@@ -61,9 +62,8 @@ class OllamaApiService(
         request,
       )
 
-    return MtValueProvider.MtResult(
+    return PromptService.Companion.PromptResult(
       response.body?.message?.content ?: throw RuntimeException(response.toString()),
-      price = 0,
       usage = null,
     )
   }
