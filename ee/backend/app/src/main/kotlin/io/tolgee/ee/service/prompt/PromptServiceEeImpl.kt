@@ -41,7 +41,8 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.HttpClientErrorException
-import org.springframework.web.client.ResourceAccessException
+import org.springframework.web.client.HttpServerErrorException
+import org.springframework.web.client.RestClientException
 import java.io.ByteArrayInputStream
 import kotlin.jvm.optionals.getOrNull
 
@@ -492,9 +493,7 @@ class PromptServiceEeImpl(
     val result =
       try {
         providerService.callProvider(organizationId, provider, params, priority)
-      } catch (e: ResourceAccessException) {
-        throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
-      } catch (e: HttpClientErrorException) {
+      } catch (e: RestClientException) {
         throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
       }
 
