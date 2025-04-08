@@ -395,7 +395,7 @@ class TranslationSuggestionControllerMtTest : ProjectAuthControllerTest("/v2/pro
   @ProjectJWTAuthTestMethod
   fun `it uses correct Tolgee formality`() {
     mockDefaultMtBucketSize(6000)
-    testData.enableTolgee(Formality.FORMAL)
+    testData.enablePrompt(Formality.FORMAL)
     saveTestData()
     performMtRequest()
     tolgeeTranslateParamsCaptor.firstValue.formality.assert.isEqualTo(Formality.FORMAL)

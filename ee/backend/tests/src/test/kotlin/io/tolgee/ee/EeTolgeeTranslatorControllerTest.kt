@@ -71,23 +71,24 @@ class EeTolgeeTranslatorControllerTest : ProjectAuthControllerTest("/v2/projects
       llmTranslationProviderEeImpl.translate(any()),
     ).thenAnswer {
       MtValueProvider.MtResult(
-        "Translated with Tolgee Translator",
+        "Translated with LLM Translator",
         ((it.arguments[0] as? ProviderTranslateParams)?.text?.length ?: 0) * 100,
         "OMG!",
       )
     }
+
+    whenever(llmTranslationProviderEeImpl.isEnabled).thenReturn(true)
+    whenever(llmTranslationProviderEeImpl.isLanguageSupported(any())).thenReturn(true)
 
     performProjectAuthPost(
       "suggest/machine-translations",
       mapOf("baseText" to "Yupee", "targetLanguageId" to testData.germanLanguage.id),
     ).andIsOk.andPrettyPrint.andAssertThatJson {
       node("result") {
-        node("TOLGEE") {
-          node("output").isEqualTo("Translated with Tolgee Translator")
+        node("PROMPT") {
+          node("output").isEqualTo("Translated with LLM Translator")
         }
       }
-
-      Mockito.mockingDetails(llmTranslationProviderEeImpl).invocations.assert.hasSize(1)
     }
   }
 }
