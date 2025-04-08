@@ -85,7 +85,6 @@ class LLMProviderService(
     val newIndex = (lastUsedIndex + 1) % providers.size
     val provider = providers.get(newIndex)
     lastUsedMap.set(name, provider.id)
-    System.out.println("provider: ${provider.id}")
     return provider
   }
 
