@@ -73,12 +73,13 @@ class PromptServiceEeImpl(
     projectId: Long,
     dto: PromptDto,
   ): Prompt {
-    val prompt = Prompt(
-      name = dto.name,
-      template = dto.template,
-      project = projectService.get(projectId),
-      providerName = dto.providerName,
-    )
+    val prompt =
+      Prompt(
+        name = dto.name,
+        template = dto.template,
+        project = projectService.get(projectId),
+        providerName = dto.providerName,
+      )
     promptRepository.save(prompt)
     return prompt
   }
@@ -127,7 +128,7 @@ class PromptServiceEeImpl(
     id: Long,
     type: String,
   ): String {
-    return "[[screenshot_${type}_${id}]]"
+    return "[[screenshot_${type}_$id]]"
   }
 
   fun encodeScreenshots(
@@ -153,9 +154,10 @@ class PromptServiceEeImpl(
 
     val languages = languageService.getProjectLanguages(projectId)
 
-    val tLanguage = targetLanguageId?.let {
-      languageService.find(targetLanguageId, projectId) ?: throw NotFoundException(Message.LANGUAGE_NOT_FOUND)
-    }
+    val tLanguage =
+      targetLanguageId?.let {
+        languageService.find(targetLanguageId, projectId) ?: throw NotFoundException(Message.LANGUAGE_NOT_FOUND)
+      }
     val sLanguage = languageService.get(project.baseLanguage!!.id, projectId)
 
     val sTranslation = key?.let { translationService.find(it, sLanguage).getOrNull() }
@@ -185,13 +187,14 @@ class PromptServiceEeImpl(
         null
       }
 
-    val pluralSourceExamples = pluralFormsWithReplacedParam?.let {
-      PluralTranslationUtil.getSourceExamples(
-        context.baseLanguage.tag,
-        tLanguage!!.tag,
-        it,
-      )
-    }
+    val pluralSourceExamples =
+      pluralFormsWithReplacedParam?.let {
+        PluralTranslationUtil.getSourceExamples(
+          context.baseLanguage.tag,
+          tLanguage!!.tag,
+          it,
+        )
+      }
 
     target.props.add(
       Variable(
@@ -260,15 +263,16 @@ class PromptServiceEeImpl(
         lazyValue = {
           val context = MtTranslatorContext(projectId, applicationContext, false)
           val metadataProvider = MetadataProvider(context)
-          val closeItems = tLanguage?.let {
-            key?.let {
-              metadataProvider.getCloseItems(
-                sLanguage,
-                tLanguage,
-                MetadataKey(key.id, sTranslation?.text ?: "", tLanguage.id),
-              )
+          val closeItems =
+            tLanguage?.let {
+              key?.let {
+                metadataProvider.getCloseItems(
+                  sLanguage,
+                  tLanguage,
+                  MetadataKey(key.id, sTranslation?.text ?: "", tLanguage.id),
+                )
+              }
             }
-          }
           if (!closeItems.isNullOrEmpty()) {
             closeItems.joinToString("\n") {
               val mapper = ObjectMapper()
@@ -291,16 +295,17 @@ class PromptServiceEeImpl(
         lazyValue = {
           val context = MtTranslatorContext(projectId, applicationContext, false)
           val metadataProvider = MetadataProvider(context)
-          val closeItems = tLanguage?.let {
-            key?.let {
-              metadataProvider.getExamples(
-                tLanguage,
-                isPlural = key.isPlural,
-                text = sTranslation?.text ?: "",
-                keyId = key.id,
-              )
+          val closeItems =
+            tLanguage?.let {
+              key?.let {
+                metadataProvider.getExamples(
+                  tLanguage,
+                  isPlural = key.isPlural,
+                  text = sTranslation?.text ?: "",
+                  keyId = key.id,
+                )
+              }
             }
-          }
           if (!closeItems.isNullOrEmpty()) {
             closeItems.joinToString("\n") {
               val mapper = ObjectMapper()
@@ -355,9 +360,10 @@ class PromptServiceEeImpl(
   }
 
   fun createVariablesLazyMap(params: List<Variable>): LazyMap {
-    val mapParams = params.map {
-      it.name to it
-    }.toMap()
+    val mapParams =
+      params.map {
+        it.name to it
+      }.toMap()
     val lazyMap = LazyMap()
     lazyMap.setMap(mapParams)
     return lazyMap
@@ -406,45 +412,50 @@ class PromptServiceEeImpl(
     val pattern = Regex("\\[\\[screenshot_(full|small)_(\\d+)]]")
 
     val parts = pattern.splitWithMatches(prompt)
-    return parts.mapNotNull(fun(it): LLMParams.Companion.LlmMessage? {
-      if (pattern.matches(it)) {
-        val match = pattern.matchEntire(it) ?: throw Error()
-        // Extract size and id from the match groups
-        val size = match.groups[1]!!.value // full or small
-        val id = match.groups[2]!!.value.toLong() // number
-        val screenshot = key.keyScreenshotReferences.find { it.screenshot.id == id }?.screenshot ?: return null
-        val file = if (size === "full") {
-          screenshot.filename
-        } else {
-          screenshot.middleSizedFilename ?: screenshot.filename
-        }
+    return parts.mapNotNull(
+      fun(it): LLMParams.Companion.LlmMessage? {
+        if (pattern.matches(it)) {
+          val match = pattern.matchEntire(it) ?: throw Error()
+          // Extract size and id from the match groups
+          val size = match.groups[1]!!.value // full or small
+          val id = match.groups[2]!!.value.toLong() // number
+          val screenshot = key.keyScreenshotReferences.find { it.screenshot.id == id }?.screenshot ?: return null
+          val file =
+            if (size === "full") {
+              screenshot.filename
+            } else {
+              screenshot.middleSizedFilename ?: screenshot.filename
+            }
 
-        var image = fileStorage.readFile(
-          screenshotService.getScreenshotPath(file),
-        )
+          var image =
+            fileStorage.readFile(
+              screenshotService.getScreenshotPath(file),
+            )
 
-        if (screenshot.keyScreenshotReferences.find { it.key.id == key.id } !== null) {
-          val converter = ImageConverter(
-            ByteArrayInputStream(
-              fileStorage.readFile(
-                screenshotService.getScreenshotPath(file),
-              ),
-            ),
+          if (screenshot.keyScreenshotReferences.find { it.key.id == key.id } !== null) {
+            val converter =
+              ImageConverter(
+                ByteArrayInputStream(
+                  fileStorage.readFile(
+                    screenshotService.getScreenshotPath(file),
+                  ),
+                ),
+              )
+            image = converter.highlightKeys(screenshot, listOf(key.id)).toByteArray()
+          }
+
+          return LLMParams.Companion.LlmMessage(
+            type = LLMParams.Companion.LlmMessageType.IMAGE,
+            image = image,
           )
-          image = converter.highlightKeys(screenshot, listOf(key.id)).toByteArray()
+        } else {
+          return LLMParams.Companion.LlmMessage(
+            type = LLMParams.Companion.LlmMessageType.TEXT,
+            text = it,
+          )
         }
-
-        return LLMParams.Companion.LlmMessage(
-          type = LLMParams.Companion.LlmMessageType.IMAGE,
-          image = image,
-        )
-      } else {
-        return LLMParams.Companion.LlmMessage(
-          type = LLMParams.Companion.LlmMessageType.TEXT,
-          text = it,
-        )
-      }
-    })
+      },
+    )
   }
 
   // Helper function to split and keep matches
@@ -476,19 +487,21 @@ class PromptServiceEeImpl(
     provider: String,
     priority: LLMProviderPriority?,
   ): PromptService.Companion.PromptResult {
-    val result = try {
-      providerService.callProvider(organizationId, provider, params, priority)
-    } catch (e: ResourceAccessException) {
-      throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
-    } catch (e: HttpClientErrorException) {
-      throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
-    }
+    val result =
+      try {
+        providerService.callProvider(organizationId, provider, params, priority)
+      } catch (e: ResourceAccessException) {
+        throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
+      } catch (e: HttpClientErrorException) {
+        throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
+      }
 
-    result.parsedJson = try {
-      jacksonObjectMapper().readValue<JsonNode>(result.response)
-    } catch (e: JsonProcessingException) {
-      null
-    }
+    result.parsedJson =
+      try {
+        jacksonObjectMapper().readValue<JsonNode>(result.response)
+      } catch (e: JsonProcessingException) {
+        null
+      }
 
     return result
   }
@@ -544,9 +557,10 @@ class PromptServiceEeImpl(
         val promptValue = internalMap.get(key)
 
         if (!promptValue?.props.isNullOrEmpty()) {
-          val mapParams = promptValue!!.props.map {
-            it.name to it
-          }.toMap()
+          val mapParams =
+            promptValue!!.props.map {
+              it.name to it
+            }.toMap()
 
           val lazyMap = LazyMap()
           lazyMap.setMap(mapParams)
@@ -580,11 +594,12 @@ class PromptServiceEeImpl(
           name = name,
           description = description,
           value = value,
-          props = if (props.size != 0) {
-            props.map { it.toPromptVariableDto() }.toMutableList()
-          } else {
-            null
-          },
+          props =
+            if (props.size != 0) {
+              props.map { it.toPromptVariableDto() }.toMutableList()
+            } else {
+              null
+            },
         )
       }
     }
