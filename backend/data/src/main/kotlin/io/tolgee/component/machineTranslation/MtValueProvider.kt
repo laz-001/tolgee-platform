@@ -40,5 +40,11 @@ interface MtValueProvider {
     return LanguageTagConvertor.findSuitableTag(supportedLanguages!!, tag)
   }
 
-  fun getMetadata(organizationId: Long, projectId: Long, keyId: Long?, targetLanguageId: Long, promptId: Long?): MtMetadata?
+  fun getMetadata(
+    organizationId: Long,
+    projectId: Long,
+    keyId: Long?,
+    targetLanguageId: Long,
+    promptId: Long?,
+  ): MtMetadata?
 }

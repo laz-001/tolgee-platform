@@ -484,13 +484,14 @@ class PromptServiceEeImpl(
     provider: String,
     priority: LLMProviderPriority?,
   ): PromptService.Companion.PromptResult {
-    val result = try {
-      providerService.callProvider(organizationId, provider, params, priority)
-    } catch (e: ResourceAccessException) {
-      throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
-    } catch (e: HttpClientErrorException) {
-      throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
-    }
+    val result =
+      try {
+        providerService.callProvider(organizationId, provider, params, priority)
+      } catch (e: ResourceAccessException) {
+        throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
+      } catch (e: HttpClientErrorException) {
+        throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
+      }
 
     result.parsedJson = jacksonObjectMapper().readValue<JsonNode>(result.response)
 

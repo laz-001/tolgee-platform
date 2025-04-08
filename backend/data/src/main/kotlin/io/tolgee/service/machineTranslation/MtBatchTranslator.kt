@@ -11,7 +11,7 @@ import org.springframework.context.ApplicationContext
 
 class MtBatchTranslator(
   private val context: MtTranslatorContext,
-  private val applicationContext: ApplicationContext
+  private val applicationContext: ApplicationContext,
 ) {
   fun translate(batch: List<MtBatchItemParams>): List<MtTranslatorResult> {
     val result = mutableListOf<MtTranslatorResult>()
@@ -167,15 +167,15 @@ class MtBatchTranslator(
     val pluralFormsWithReplacedParam =
       if (isPlural) context.getPluralFormsReplacingReplaceParam(baseTranslationText) else null
 
-
     val provider = applicationContext.getBean(item.service.providerClass)
-    val metadata = provider.getMetadata(
-      context.project.organizationOwnerId,
-      context.project.id,
-      item.keyId,
-      item.targetLanguageId,
-      item.promptId
-    )
+    val metadata =
+      provider.getMetadata(
+        context.project.organizationOwnerId,
+        context.project.id,
+        item.keyId,
+        item.targetLanguageId,
+        item.promptId,
+      )
 
     return TranslationParams(
       text = withReplacedParams,

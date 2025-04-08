@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.tolgee.component.machineTranslation.MtValueProvider
 import io.tolgee.configuration.tolgee.machineTranslation.LLMProviderInterface
 import io.tolgee.constants.Message
 import io.tolgee.dtos.LLMParams

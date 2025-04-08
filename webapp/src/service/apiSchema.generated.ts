@@ -2150,7 +2150,8 @@ export interface components {
         | "llm_provider_error"
         | "prompt_not_found"
         | "llm_provider_not_returned_json"
-        | "llm_template_parsing_error";
+        | "llm_template_parsing_error"
+        | "llm_rate_limited";
       params?: { [key: string]: unknown }[];
     };
     ExistenceEntityDescription: {
@@ -2879,8 +2880,8 @@ export interface components {
       keepAlive?: string;
       model?: string;
       name: string;
-      priority?: string;
-      type: "OPENAI" | "OLLAMA";
+      priority?: "LOW" | "HIGH";
+      type: "OPENAI" | "OLLAMA" | "CLAUDE";
     };
     LLMProviderRequest: {
       apiKey?: string;
@@ -2890,8 +2891,8 @@ export interface components {
       keepAlive?: string;
       model?: string;
       name: string;
-      priority?: string;
-      type: "OPENAI" | "OLLAMA";
+      priority?: "LOW" | "HIGH";
+      type: "OPENAI" | "OLLAMA" | "CLAUDE";
     };
     LLMProviderSimpleModel: {
       name: string;
@@ -3040,6 +3041,8 @@ export interface components {
       translatedPercentage: number;
       /** Format: int64 */
       translatedWordCount: number;
+      /** Format: date-time */
+      translationsUpdatedAt?: string;
       /** Format: int64 */
       untranslatedKeyCount: number;
       /** Format: double */
@@ -3921,6 +3924,8 @@ export interface components {
       template: string;
     };
     PromptResponseDto: {
+      /** Format: int64 */
+      price: number;
       prompt: string;
       result: string;
       usage?: components["schemas"]["PromptResponseUsageDto"];
@@ -4757,7 +4762,8 @@ export interface components {
         | "llm_provider_error"
         | "prompt_not_found"
         | "llm_provider_not_returned_json"
-        | "llm_template_parsing_error";
+        | "llm_template_parsing_error"
+        | "llm_rate_limited";
       params?: { [key: string]: unknown }[];
       success: boolean;
     };

@@ -1,6 +1,5 @@
 package io.tolgee.ee.component.llm
 
-import io.tolgee.component.machineTranslation.MtValueProvider
 import io.tolgee.configuration.tolgee.machineTranslation.LLMProviderInterface
 import io.tolgee.dtos.LLMParams
 import io.tolgee.service.PromptService

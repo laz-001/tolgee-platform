@@ -97,7 +97,7 @@ class PromptController(
       prompt,
       response.response,
       response.usage?.totalTokens ?: 0L,
-      usage = response.usage
+      usage = response.usage,
     )
   }
 

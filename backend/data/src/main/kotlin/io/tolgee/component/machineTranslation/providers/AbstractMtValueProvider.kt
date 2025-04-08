@@ -49,7 +49,13 @@ abstract class AbstractMtValueProvider : MtValueProvider {
     }
   }
 
-  override fun getMetadata(organizationId: Long, projectId: Long, keyId: Long?, targetLanguageId: Long, promptId: Long?): MtMetadata? = null
+  override fun getMetadata(
+    organizationId: Long,
+    projectId: Long,
+    keyId: Long?,
+    targetLanguageId: Long,
+    promptId: Long?,
+  ): MtMetadata? = null
 
   /**
    * Translates the text via provider.

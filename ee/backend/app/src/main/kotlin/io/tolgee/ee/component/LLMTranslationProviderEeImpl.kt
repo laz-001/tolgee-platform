@@ -26,26 +26,37 @@ class LLMTranslationProviderEeImpl(
   override fun translateViaProvider(params: ProviderTranslateParams): MtValueProvider.MtResult {
     val metadata = params.metadata ?: throw Error("Metadata are required here")
     val messages = promptService.getLlmMessages(metadata.prompt, metadata.keyId)
-    val result = promptService.runPrompt(
-      metadata.organizationId,
-      params = LLMParams(messages),
-      provider = metadata.provider,
-      priority = if (params.isBatch) LLMProviderPriority.LOW else LLMProviderPriority.HIGH,
-    )
+    val result =
+      promptService.runPrompt(
+        metadata.organizationId,
+        params = LLMParams(messages),
+        provider = metadata.provider,
+        priority = if (params.isBatch) LLMProviderPriority.LOW else LLMProviderPriority.HIGH,
+      )
     return promptService.getTranslationFromPromptResult(result)
   }
 
-  override fun getMetadata(organizationId: Long, projectId: Long, keyId: Long?, targetLanguageId: Long, promptId: Long?): MtMetadata? {
+  override fun getMetadata(
+    organizationId: Long,
+    projectId: Long,
+    keyId: Long?,
+    targetLanguageId: Long,
+    promptId: Long?,
+  ): MtMetadata? {
     val promptDto = promptService.findPromptOrDefaultDto(projectId, promptId)
     if (keyId == null) {
       throw Error("Key ID is required")
     }
-    val prompt = promptService.getPrompt(projectId, PromptRunDto(
-      template = promptDto.template,
-      keyId = keyId,
-      targetLanguageId = targetLanguageId,
-      provider = promptDto.providerName,
-    ))
+    val prompt =
+      promptService.getPrompt(
+        projectId,
+        PromptRunDto(
+          template = promptDto.template,
+          keyId = keyId,
+          targetLanguageId = targetLanguageId,
+          provider = promptDto.providerName,
+        ),
+      )
     return MtMetadata(prompt, promptDto.providerName, keyId, organizationId)
   }
 
