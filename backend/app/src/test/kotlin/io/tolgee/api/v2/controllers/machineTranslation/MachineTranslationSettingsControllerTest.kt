@@ -188,7 +188,7 @@ class MachineTranslationSettingsControllerTest : ProjectAuthControllerTest() {
           ),
         ),
       ),
-      ).andAssertThatJson {
+    ).andAssertThatJson {
       node("_embedded.languageConfigs") {
         node("[1]") {
           node("primaryServiceInfo.formality").isEqualTo("FORMAL")

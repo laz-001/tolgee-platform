@@ -61,6 +61,7 @@ class LLMTranslationProviderEeImpl(
   }
 
   override fun isLanguageSupported(tag: String): Boolean = true
+
   override fun isLanguageFormalitySupported(tag: String): Boolean = true
 
   // empty array meaning all is supported

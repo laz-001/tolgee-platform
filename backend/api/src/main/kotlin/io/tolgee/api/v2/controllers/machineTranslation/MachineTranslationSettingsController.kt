@@ -16,7 +16,6 @@ import io.tolgee.security.authentication.AllowApiAccess
 import io.tolgee.security.authorization.RequiresProjectPermissions
 import io.tolgee.security.authorization.UseDefaultPermissions
 import io.tolgee.service.machineTranslation.MtServiceConfigService
-import io.tolgee.util.executeInNewTransaction
 import org.springframework.hateoas.CollectionModel
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
