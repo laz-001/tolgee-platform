@@ -4325,4 +4325,13 @@
     <changeSet author="stepangranat (generated)" id="1743173423388-7">
         <dropColumn columnName="primary_service_prompt_id" tableName="mt_service_config"/>
     </changeSet>
+    <changeSet author="stepangranat (generated)" id="1744211373646-1">
+        <renameColumn 
+            tableName="mt_service_config"
+            oldColumnName="tolgee_formality"
+            newColumnName="prompt_formality"
+            columnDataType="VARCHAR(255)"
+            defaultValue="DEFAULT"
+        />
+    </changeSet>
 </databaseChangeLog>

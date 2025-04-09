@@ -29,9 +29,6 @@ class MtServiceConfig : StandardAuditModel() {
   var primaryService: MtServiceType? = null
 
   @Enumerated(EnumType.STRING)
-  var primaryServiceFormality: Formality? = null
-
-  @Enumerated(EnumType.STRING)
   @ElementCollection(targetClass = MtServiceType::class)
   var enabledServices: MutableSet<MtServiceType> = mutableSetOf()
 
@@ -45,7 +42,7 @@ class MtServiceConfig : StandardAuditModel() {
 
   @Enumerated(EnumType.STRING)
   @ColumnDefault("DEFAULT")
-  var tolgeeFormality: Formality = Formality.DEFAULT
+  var promptFormality: Formality = Formality.DEFAULT
 
   @ManyToOne
   @JoinColumn(name = "prompt_id")
@@ -69,6 +66,7 @@ class MtServiceConfig : StandardAuditModel() {
         when (serviceType) {
           MtServiceType.AWS -> config.awsFormality
           MtServiceType.DEEPL -> config.deeplFormality
+          MtServiceType.PROMPT -> config.promptFormality
           else -> null
         }
       val promptId =

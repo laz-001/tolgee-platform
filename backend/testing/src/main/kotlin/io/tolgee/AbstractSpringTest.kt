@@ -9,12 +9,7 @@ import io.tolgee.component.machineTranslation.MtServiceManager
 import io.tolgee.configuration.tolgee.AuthenticationProperties
 import io.tolgee.configuration.tolgee.InternalProperties
 import io.tolgee.configuration.tolgee.TolgeeProperties
-import io.tolgee.configuration.tolgee.machineTranslation.AwsMachineTranslationProperties
-import io.tolgee.configuration.tolgee.machineTranslation.AzureCognitiveTranslationProperties
-import io.tolgee.configuration.tolgee.machineTranslation.BaiduMachineTranslationProperties
-import io.tolgee.configuration.tolgee.machineTranslation.DeeplMachineTranslationProperties
-import io.tolgee.configuration.tolgee.machineTranslation.GoogleMachineTranslationProperties
-import io.tolgee.configuration.tolgee.machineTranslation.MachineTranslationProperties
+import io.tolgee.configuration.tolgee.machineTranslation.*
 import io.tolgee.constants.MtServiceType
 import io.tolgee.development.DbPopulatorReal
 import io.tolgee.development.testDataBuilder.TestDataService
@@ -161,6 +156,9 @@ abstract class AbstractSpringTest : AbstractTransactionalTest() {
 
   @Autowired
   lateinit var baiduMachineTranslationProperties: BaiduMachineTranslationProperties
+
+  @Autowired
+  lateinit var llmProperties: LLMProperties
 
   @Autowired
   lateinit var internalProperties: InternalProperties

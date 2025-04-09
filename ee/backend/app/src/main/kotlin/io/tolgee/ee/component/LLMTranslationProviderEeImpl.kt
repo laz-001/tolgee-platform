@@ -60,9 +60,8 @@ class LLMTranslationProviderEeImpl(
     return MtMetadata(prompt, promptDto.providerName, keyId, organizationId)
   }
 
-  override fun isLanguageSupported(tag: String): Boolean {
-    return true
-  }
+  override fun isLanguageSupported(tag: String): Boolean = true
+  override fun isLanguageFormalitySupported(tag: String): Boolean = true
 
   // empty array meaning all is supported
   override val supportedLanguages = arrayOf<String>()

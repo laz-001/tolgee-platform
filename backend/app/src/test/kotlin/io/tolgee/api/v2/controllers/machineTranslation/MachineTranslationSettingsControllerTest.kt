@@ -47,6 +47,7 @@ class MachineTranslationSettingsControllerTest : ProjectAuthControllerTest() {
     googleMachineTranslationProperties.defaultEnabled = true
     googleMachineTranslationProperties.defaultPrimary = true
     googleMachineTranslationProperties.apiKey = "dummy"
+    llmProperties.enabled = true
   }
 
   @Test
@@ -182,12 +183,12 @@ class MachineTranslationSettingsControllerTest : ProjectAuthControllerTest() {
         listOf(
           MachineTranslationLanguagePropsDto(
             targetLanguageId = testData.germanLanguage.id,
-            primaryService = MtServiceType.AWS,
-            primaryServiceInfo = MtServiceInfo(MtServiceType.PROMPT, Formality.FORMAL),
+            primaryService = MtServiceType.PROMPT,
+            primaryServiceInfo = MtServiceInfo(MtServiceType.PROMPT, Formality.FORMAL, promptId = null),
           ),
         ),
       ),
-    ).andAssertThatJson {
+      ).andAssertThatJson {
       node("_embedded.languageConfigs") {
         node("[1]") {
           node("primaryServiceInfo.formality").isEqualTo("FORMAL")

@@ -135,6 +135,7 @@ class MtServiceConfigService(
       entity.enabledServices = getEnabledServices(languageSetting)
       setFormalities(entity, languageSetting)
       save(entity)
+      entityManager.flush()
     }
 
     val toDelete =
@@ -156,7 +157,6 @@ class MtServiceConfigService(
     val primaryServiceInfo = languageSetting.primaryServiceInfo ?: return
 
     entity.primaryService = primaryServiceInfo.serviceType
-    entity.primaryServiceFormality = primaryServiceInfo.formality
   }
 
   private fun Map<Long, LanguageDto>.getLanguageOrThrow(id: Long?): LanguageDto? {
@@ -264,10 +264,15 @@ class MtServiceConfigService(
     entity: MtServiceConfig,
     languageSetting: MachineTranslationLanguagePropsDto,
   ) {
-    languageSetting.enabledServicesInfoNotNull.forEach {
+    val services = languageSetting.enabledServicesInfoNotNull.toMutableList()
+    languageSetting.primaryServiceInfo?.let {
+      services.add(it)
+    }
+    services.forEach {
       when (it.serviceType) {
         MtServiceType.AWS -> entity.awsFormality = it.formality ?: Formality.DEFAULT
         MtServiceType.DEEPL -> entity.deeplFormality = it.formality ?: Formality.DEFAULT
+        MtServiceType.PROMPT -> entity.promptFormality = it.formality ?: Formality.DEFAULT
         else -> {}
       }
     }
