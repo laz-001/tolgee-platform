@@ -5,6 +5,7 @@ import io.tolgee.batch.JobCharacter
 import io.tolgee.batch.data.BatchJobDto
 import io.tolgee.batch.data.BatchTranslationTargetItem
 import io.tolgee.batch.request.MachineTranslationRequest
+import io.tolgee.constants.MtServiceType
 import io.tolgee.model.batch.params.MachineTranslationJobParams
 import io.tolgee.service.machineTranslation.MtServiceConfigService
 import io.tolgee.service.project.ProjectService
@@ -62,10 +63,10 @@ class MachineTranslationChunkProcessor(
     projectId ?: throw IllegalArgumentException("Project id is required")
     val languageIds = request.targetLanguageIds
     val services = mtServiceConfigService.getPrimaryServices(languageIds, projectId).values.toSet()
-//    if (services.map { it?.serviceType }.contains(MtServiceType.TOLGEE)) {
-//      return 2
-//    }
-    return 1
+    if (services.map { it?.serviceType }.contains(MtServiceType.PROMPT)) {
+      return 2
+    }
+    return 5
   }
 
   override fun getTargetItemType(): Class<BatchTranslationTargetItem> {
