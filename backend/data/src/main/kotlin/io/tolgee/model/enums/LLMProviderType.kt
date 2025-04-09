@@ -4,4 +4,5 @@ enum class LLMProviderType {
   OPENAI,
   OLLAMA,
   CLAUDE,
+  GEMINI,
 }

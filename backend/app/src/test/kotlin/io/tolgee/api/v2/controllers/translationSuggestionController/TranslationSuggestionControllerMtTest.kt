@@ -155,6 +155,8 @@ class TranslationSuggestionControllerMtTest : ProjectAuthControllerTest("/v2/pro
 
     tolgeeTranslateParamsCaptor = argumentCaptor()
 
+    whenever(llmTranslationProvider.isEnabled).thenReturn(true)
+    whenever(llmTranslationProvider.isLanguageSupported(any())).thenReturn(true)
     whenever(
       llmTranslationProvider.translate(
         tolgeeTranslateParamsCaptor.capture(),
@@ -221,7 +223,7 @@ class TranslationSuggestionControllerMtTest : ProjectAuthControllerTest("/v2/pro
 
   @Test
   @ProjectJWTAuthTestMethod
-  fun `it suggests using all enabled services (Google, AWS, DeepL, Azure, Baidu, Tolgee)`() {
+  fun `it suggests using all enabled services (Google, AWS, DeepL, Azure, Baidu, PROMPT)`() {
     mockDefaultMtBucketSize(6000)
     testData.enableAll()
     saveTestData()
@@ -258,7 +260,7 @@ class TranslationSuggestionControllerMtTest : ProjectAuthControllerTest("/v2/pro
         node("DEEPL").isAbsent()
         node("AZURE").isAbsent()
         node("BAIDU").isAbsent()
-        node("TOLGEE").isEqualTo("Translated with Tolgee Translator")
+        node("PROMPT").isEqualTo("Translated with Tolgee Translator")
       }
     }
   }

@@ -9,6 +9,7 @@ import io.tolgee.dtos.LLMParams
 import io.tolgee.dtos.LLMProviderDto
 import io.tolgee.dtos.request.llmProvider.LLMProviderRequest
 import io.tolgee.ee.component.llm.ClaudeApiService
+import io.tolgee.ee.component.llm.GeminiApiService
 import io.tolgee.ee.component.llm.OllamaApiService
 import io.tolgee.ee.component.llm.OpenaiApiService
 import io.tolgee.exceptions.BadRequestException
@@ -36,6 +37,7 @@ class LLMProviderService(
   private val cacheManager: CacheManager,
   private val currentDateProvider: CurrentDateProvider,
   private val claudeApiService: ClaudeApiService,
+  private val geminiApiService: GeminiApiService,
 ) {
   private val cache: Cache by lazy { cacheManager.getCache(Caches.LLM_PROVIDERS) }
   private var lastUsedMap: MutableMap<String, Long> = mutableMapOf()
@@ -105,6 +107,7 @@ class LLMProviderService(
           LLMProviderType.OPENAI -> openaiApiService.translate(params, providerConfig)
           LLMProviderType.OLLAMA -> ollamaApiService.translate(params, providerConfig)
           LLMProviderType.CLAUDE -> claudeApiService.translate(params, providerConfig)
+          LLMProviderType.GEMINI -> geminiApiService.translate(params, providerConfig)
         }
       } catch (e: TooManyRequests) {
         suspendProvider(provider, providerConfig.id, 60 * 1000)
