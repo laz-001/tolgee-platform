@@ -29,6 +29,9 @@ class MtServiceConfig : StandardAuditModel() {
   var primaryService: MtServiceType? = null
 
   @Enumerated(EnumType.STRING)
+  var primaryServiceFormality: Formality? = null
+
+  @Enumerated(EnumType.STRING)
   @ElementCollection(targetClass = MtServiceType::class)
   var enabledServices: MutableSet<MtServiceType> = mutableSetOf()
 
