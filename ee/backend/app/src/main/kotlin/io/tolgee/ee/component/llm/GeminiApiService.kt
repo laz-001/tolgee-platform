@@ -25,12 +25,9 @@ import java.util.*
 
 @Component
 @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-class GeminiApiService(
-  private val restTemplate: RestTemplate,
-) : Logging {
-  fun translate(
-    params: LLMParams,
-    config: LLMProviderInterface,
+class GeminiApiService : AbstractLLMApiService(), Logging {
+  override fun translate(
+    params: LLMParams, config: LLMProviderInterface, restTemplate: RestTemplate
   ): PromptService.Companion.PromptResult {
     val headers = HttpHeaders()
     headers.set("content-type", "application/json")
@@ -47,68 +44,55 @@ class GeminiApiService(
     val contents = mutableListOf<RequestContent>()
 
     inputMessages.forEach {
-      if (
-        it.type == LLMParams.Companion.LlmMessageType.TEXT &&
-        it.text != null
-      ) {
+      if (it.type == LLMParams.Companion.LlmMessageType.TEXT && it.text != null) {
         contents.add(RequestContent(parts = listOf(RequestPart(text = it.text!!))))
-      } else if (
-        it.type == LLMParams.Companion.LlmMessageType.IMAGE &&
-        it.image != null
-      ) {
+      } else if (it.type == LLMParams.Companion.LlmMessageType.IMAGE && it.image != null) {
         contents.add(
           RequestContent(
-            parts =
-              listOf(
-                RequestPart(
-                  inlineData =
-                    RequestInlineData(
-                      mimeType = "image/png",
-                      data = Base64.getEncoder().encodeToString(it.image),
-                    ),
+            parts = listOf(
+              RequestPart(
+                inlineData = RequestInlineData(
+                  mimeType = "image/png",
+                  data = Base64.getEncoder().encodeToString(it.image),
                 ),
               ),
+            ),
           ),
         )
       }
     }
 
-    val requestBody =
-      RequestBody(
-        contents = contents,
-        generationConfig =
-          RequestGenerationConfig(
-            responseMimeType = if (params.shouldOutputJson) "application/json" else null,
-          ),
-      )
+    val requestBody = RequestBody(
+      contents = contents,
+      generationConfig = RequestGenerationConfig(
+        responseMimeType = if (params.shouldOutputJson) "application/json" else null,
+      ),
+    )
 
     val request = HttpEntity(requestBody, headers)
 
-    val response: ResponseEntity<ResponseBody> =
-      try {
-        restTemplate.exchange<ResponseBody>(
-          "${config.apiUrl}/v1beta/models/${config.model}:generateContent?key=${config.apiKey}",
-          HttpMethod.POST,
-          request,
-        )
-      } catch (e: HttpClientErrorException.BadRequest) {
-        e.parse()?.get("error")?.get("message")?.toString()?.let {
-          throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(it))
-        }
-        throw e
+    val response: ResponseEntity<ResponseBody> = try {
+      restTemplate.exchange<ResponseBody>(
+        "${config.apiUrl}/v1beta/models/${config.model}:generateContent?key=${config.apiKey}",
+        HttpMethod.POST,
+        request,
+      )
+    } catch (e: HttpClientErrorException.BadRequest) {
+      e.parse()?.get("error")?.get("message")?.toString()?.let {
+        throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(it))
       }
+      throw e
+    }
 
     return PromptService.Companion.PromptResult(
-      response =
-        response.body?.candidates?.first()?.content?.parts?.first()?.text
-          ?: throw RuntimeException(response.toString()),
-      usage =
-        response.body?.usageMetadata?.let {
-          PromptResponseUsageDto(
-            inputTokens = it.promptTokenCount,
-            outputTokens = it.candidatesTokenCount,
-          )
-        },
+      response = response.body?.candidates?.first()?.content?.parts?.first()?.text
+        ?: throw RuntimeException(response.toString()),
+      usage = response.body?.usageMetadata?.let {
+        PromptResponseUsageDto(
+          inputTokens = it.promptTokenCount,
+          outputTokens = it.candidatesTokenCount,
+        )
+      },
     )
   }
 
@@ -139,10 +123,8 @@ class GeminiApiService(
     )
 
     class RequestPart(
-      @JsonInclude(JsonInclude.Include.NON_NULL)
-      val text: String? = null,
-      @JsonInclude(JsonInclude.Include.NON_NULL)
-      val inlineData: RequestInlineData? = null,
+      @JsonInclude(JsonInclude.Include.NON_NULL) val text: String? = null,
+      @JsonInclude(JsonInclude.Include.NON_NULL) val inlineData: RequestInlineData? = null,
     )
 
     class RequestInlineData(

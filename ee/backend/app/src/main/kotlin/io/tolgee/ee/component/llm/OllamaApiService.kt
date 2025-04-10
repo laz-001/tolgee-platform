@@ -16,90 +16,89 @@ import java.util.*
 
 @Component
 @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-class OllamaApiService(
-  private val restTemplate: RestTemplate,
-) : Logging {
-  fun translate(
-    params: LLMParams,
-    config: LLMProviderInterface,
-  ): PromptService.Companion.PromptResult {
-    val headers = HttpHeaders()
-    headers.set("content-type", "application/json")
+class OllamaApiService : AbstractLLMApiService(), Logging {
+    override fun translate(
+        params: LLMParams,
+        config: LLMProviderInterface,
+        restTemplate: RestTemplate
+    ): PromptService.Companion.PromptResult {
+        val headers = HttpHeaders()
+        headers.set("content-type", "application/json")
 
-    val inputMessages = params.messages.toMutableList()
+        val inputMessages = params.messages.toMutableList()
 
-    if (params.shouldOutputJson) {
-      inputMessages.add(
-        LLMParams.Companion.LlmMessage(LLMParams.Companion.LlmMessageType.TEXT, "Return only valid json!"),
-      )
-    }
+        if (params.shouldOutputJson) {
+            inputMessages.add(
+                LLMParams.Companion.LlmMessage(LLMParams.Companion.LlmMessageType.TEXT, "Return only valid json!"),
+            )
+        }
 
-    val messages = mutableListOf<RequestMessage>()
+        val messages = mutableListOf<RequestMessage>()
 
-    inputMessages.forEach {
-      if (it.type == LLMParams.Companion.LlmMessageType.TEXT && it.text != null) {
-        messages.add(RequestMessage(role = "user", content = it.text))
-      } else if (it.type == LLMParams.Companion.LlmMessageType.IMAGE && it.image != null) {
-        messages.add(
-          RequestMessage(
-            role = "user",
-            images = listOf("${Base64.getEncoder().encode(it.image)}"),
-          ),
+        inputMessages.forEach {
+            if (it.type == LLMParams.Companion.LlmMessageType.TEXT && it.text != null) {
+                messages.add(RequestMessage(role = "user", content = it.text))
+            } else if (it.type == LLMParams.Companion.LlmMessageType.IMAGE && it.image != null) {
+                messages.add(
+                    RequestMessage(
+                        role = "user",
+                        images = listOf("${Base64.getEncoder().encode(it.image)}"),
+                    ),
+                )
+            }
+        }
+
+        val requestBody =
+            RequestBody(
+                model = config.model!!,
+                messages = messages,
+                keepAlive = config.keepAlive,
+                format = if (params.shouldOutputJson && config.format == "json") "json" else null,
+            )
+
+        val request = HttpEntity(requestBody, headers)
+
+        val response =
+            restTemplate.exchange<ResponseBody>(
+                "${config.apiUrl}/api/chat",
+                HttpMethod.POST,
+                request,
+            )
+
+        return PromptService.Companion.PromptResult(
+            response.body?.message?.content ?: throw RuntimeException(response.toString()),
+            usage = null,
         )
-      }
     }
 
-    val requestBody =
-      RequestBody(
-        model = config.model!!,
-        messages = messages,
-        keepAlive = config.keepAlive,
-        format = if (params.shouldOutputJson && config.format == "json") "json" else null,
-      )
+    /**
+     * Data structure for mapping the AzureCognitive JSON response objects.
+     */
+    companion object {
+        const val BUCKET_KEY = "tolgee-translate-rate-limit"
 
-    val request = HttpEntity(requestBody, headers)
+        class RequestBody(
+            val model: String,
+            val messages: List<RequestMessage>,
+            val stream: Boolean = false,
+            val keepAlive: String? = null,
+            val format: String? = "json",
+        )
 
-    val response =
-      restTemplate.exchange<ResponseBody>(
-        "${config.apiUrl}/api/chat",
-        HttpMethod.POST,
-        request,
-      )
+        class RequestMessage(
+            val role: String,
+            val content: String? = null,
+            val images: List<String>? = null,
+        )
 
-    return PromptService.Companion.PromptResult(
-      response.body?.message?.content ?: throw RuntimeException(response.toString()),
-      usage = null,
-    )
-  }
+        class ResponseBody(
+            val model: String,
+            val message: ResponseMessage,
+        )
 
-  /**
-   * Data structure for mapping the AzureCognitive JSON response objects.
-   */
-  companion object {
-    const val BUCKET_KEY = "tolgee-translate-rate-limit"
-
-    class RequestBody(
-      val model: String,
-      val messages: List<RequestMessage>,
-      val stream: Boolean = false,
-      val keepAlive: String? = null,
-      val format: String? = "json",
-    )
-
-    class RequestMessage(
-      val role: String,
-      val content: String? = null,
-      val images: List<String>? = null,
-    )
-
-    class ResponseBody(
-      val model: String,
-      val message: ResponseMessage,
-    )
-
-    class ResponseMessage(
-      val role: String,
-      val content: String,
-    )
-  }
+        class ResponseMessage(
+            val role: String,
+            val content: String,
+        )
+    }
 }

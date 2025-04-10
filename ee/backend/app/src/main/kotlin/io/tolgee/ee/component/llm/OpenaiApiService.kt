@@ -25,12 +25,11 @@ import java.util.*
 
 @Component
 @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-class OpenaiApiService(
-  private val restTemplate: RestTemplate,
-) : Logging {
-  fun translate(
+class OpenaiApiService : AbstractLLMApiService(), Logging {
+  override fun translate(
     params: LLMParams,
     config: LLMProviderInterface,
+    restTemplate: RestTemplate,
   ): PromptService.Companion.PromptResult {
     val headers = HttpHeaders()
     headers.set("content-type", "application/json")
