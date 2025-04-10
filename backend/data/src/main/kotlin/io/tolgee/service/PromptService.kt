@@ -29,6 +29,7 @@ interface PromptService {
       val response: String,
       val usage: PromptResponseUsageDto?,
       var parsedJson: JsonNode? = null,
+      var price: Int = 0,
     )
   }
 }

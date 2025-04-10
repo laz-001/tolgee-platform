@@ -10,6 +10,7 @@ import com.github.jknack.handlebars.Handlebars
 import com.github.jknack.handlebars.HandlebarsException
 import io.tolgee.component.fileStorage.FileStorage
 import io.tolgee.component.machineTranslation.MtValueProvider
+import io.tolgee.component.machineTranslation.TranslationApiRateLimitException
 import io.tolgee.constants.Message
 import io.tolgee.dtos.LLMParams
 import io.tolgee.dtos.request.prompt.PromptDto
@@ -31,7 +32,6 @@ import io.tolgee.service.machineTranslation.MetadataProvider
 import io.tolgee.service.machineTranslation.MtTranslatorContext
 import io.tolgee.service.machineTranslation.PluralTranslationUtil
 import io.tolgee.service.project.ProjectService
-import io.tolgee.service.security.SecurityService
 import io.tolgee.service.translation.TranslationService
 import io.tolgee.util.ImageConverter
 import org.springframework.context.ApplicationContext
@@ -47,7 +47,6 @@ import kotlin.jvm.optionals.getOrNull
 @Primary
 @Service
 class PromptServiceEeImpl(
-  private val securityService: SecurityService,
   private val keyService: KeyService,
   private val languageService: LanguageService,
   private val projectService: ProjectService,
@@ -501,6 +500,8 @@ class PromptServiceEeImpl(
         providerService.callProvider(organizationId, provider, params, priority)
       } catch (e: RestClientException) {
         throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
+      } catch (e: TranslationApiRateLimitException) {
+        throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(e.message))
       }
 
     result.parsedJson =
@@ -516,10 +517,11 @@ class PromptServiceEeImpl(
   fun getTranslationFromPromptResult(result: PromptService.Companion.PromptResult): MtValueProvider.MtResult {
     val json = result.parsedJson ?: throw BadRequestException(Message.LLM_PROVIDER_NOT_RETURNED_JSON)
     val translation = json.get("output").asText() ?: throw BadRequestException(Message.LLM_PROVIDER_NOT_RETURNED_JSON)
+
     return MtValueProvider.MtResult(
       translation,
       contextDescription = json.get("contextDescription").asText(),
-      price = 0,
+      price = result.price,
       usage = result.usage,
     )
   }

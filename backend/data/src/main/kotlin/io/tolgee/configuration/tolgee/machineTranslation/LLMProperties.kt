@@ -23,8 +23,8 @@ class LLMProperties {
     override var deployment: String?,
     override var keepAlive: String?,
     override var format: String?,
-    override var pricePerMillionInput: Long?,
-    override var pricePerMillionOutput: Long?,
+    override var pricePerMillionInput: Double?,
+    override var pricePerMillionOutput: Double?,
   ) : LLMProviderInterface {
     fun toDto(id: Long): LLMProviderDto {
       return LLMProviderDto(

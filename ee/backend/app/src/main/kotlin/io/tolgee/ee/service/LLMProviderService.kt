@@ -8,6 +8,7 @@ import io.tolgee.constants.Message
 import io.tolgee.dtos.LLMParams
 import io.tolgee.dtos.LLMProviderDto
 import io.tolgee.dtos.request.llmProvider.LLMProviderRequest
+import io.tolgee.dtos.response.prompt.PromptResponseUsageDto
 import io.tolgee.ee.component.llm.ClaudeApiService
 import io.tolgee.ee.component.llm.GeminiApiService
 import io.tolgee.ee.component.llm.OllamaApiService
@@ -26,6 +27,9 @@ import org.springframework.cache.set
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException.TooManyRequests
 import kotlin.jvm.optionals.getOrNull
+import kotlin.math.roundToInt
+
+const val TOKEN_PRICE_PER_MILION = 0.000_035 // EUR
 
 @Service
 class LLMProviderService(
@@ -82,6 +86,7 @@ class LLMProviderService(
       val closestUnsuspend = providerInfo.suspendMap.map { (_, time) -> time }.min()
       throw TranslationApiRateLimitException(closestUnsuspend)
     }
+
     var lastUsed = lastUsedMap.get(name)
     val lastUsedIndex = providers.indexOfFirst { it.id == lastUsed }
     val newIndex = (lastUsedIndex + 1) % providers.size
@@ -100,19 +105,27 @@ class LLMProviderService(
     params: LLMParams,
     priority: LLMProviderPriority? = null,
   ): PromptService.Companion.PromptResult {
-    while (true) {
+    var lastError: Exception? = null
+
+    // attempt 3 times to find non-rate-limited provider
+    for (i in 0..3) {
       val providerConfig = getProviderByName(organizationId, provider, priority)
       try {
-        return when (providerConfig.type) {
-          LLMProviderType.OPENAI -> openaiApiService.translate(params, providerConfig)
-          LLMProviderType.OLLAMA -> ollamaApiService.translate(params, providerConfig)
-          LLMProviderType.CLAUDE -> claudeApiService.translate(params, providerConfig)
-          LLMProviderType.GEMINI -> geminiApiService.translate(params, providerConfig)
-        }
+        val result =
+          when (providerConfig.type) {
+            LLMProviderType.OPENAI -> openaiApiService.translate(params, providerConfig)
+            LLMProviderType.OLLAMA -> ollamaApiService.translate(params, providerConfig)
+            LLMProviderType.CLAUDE -> claudeApiService.translate(params, providerConfig)
+            LLMProviderType.GEMINI -> geminiApiService.translate(params, providerConfig)
+          }
+        result.price = calculatePrice(providerConfig, result.usage)
+        return result
       } catch (e: TooManyRequests) {
         suspendProvider(provider, providerConfig.id, 60 * 1000)
+        lastError = e
       }
     }
+    throw lastError!!
   }
 
   fun suspendProvider(
@@ -180,6 +193,26 @@ class LLMProviderService(
       // server configured providers are indexed like -1, -2, -3, to identify them
       llmProvider.toDto(-(index.toLong()) - 1)
     }
+  }
+
+  fun calculatePrice(
+    providerConfig: LLMProviderDto,
+    usage: PromptResponseUsageDto?,
+  ): Int {
+    val pricePerMillionInput: Double = providerConfig.pricePerMillionInput ?: 0.0
+    val pricePerMillionOutput: Double = providerConfig.pricePerMillionOutput ?: 0.0
+    val inputTokens: Long = usage?.inputTokens ?: 0L
+    val outputTokens: Long = usage?.outputTokens ?: 0L
+    val cachedTokens: Long = usage?.cachedTokens ?: 0L
+
+    return (
+      (
+        (
+          ((inputTokens - cachedTokens) * pricePerMillionInput) +
+            (outputTokens * pricePerMillionOutput)
+        )
+      ) * TOKEN_PRICE_PER_MILION * 100
+    ).roundToInt()
   }
 
   companion object {

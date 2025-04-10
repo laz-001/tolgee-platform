@@ -111,10 +111,11 @@ class OpenaiApiService(
     return PromptService.Companion.PromptResult(
       response = response.body?.choices?.first()?.message?.content ?: throw RuntimeException(response.toString()),
       usage =
-        response.body?.usage?.total_tokens?.let {
+        response.body?.usage?.let {
           PromptResponseUsageDto(
-            totalTokens = it.toLong(),
-            cachedTokens = response.body?.usage?.prompt_tokens_details?.cached_tokens?.toLong(),
+            inputTokens = it.prompt_tokens,
+            outputTokens = it.completion_tokens,
+            cachedTokens = it.prompt_tokens_details?.cached_tokens,
           )
         },
     )
@@ -192,21 +193,21 @@ class OpenaiApiService(
     )
 
     class ResponseUsage(
-      val prompt_tokens: Int,
-      val completion_tokens: Int,
-      val total_tokens: Int,
+      val prompt_tokens: Long,
+      val completion_tokens: Long,
+      val total_tokens: Long,
       val prompt_tokens_details: ResponsePromptTokenDetails?,
       val completion_tokens_details: ResponseCompletionTokenDetails?,
     )
 
     class ResponsePromptTokenDetails(
-      val cached_tokens: Int,
+      val cached_tokens: Long,
     )
 
     class ResponseCompletionTokenDetails(
-      val reasoning_tokens: Int,
-      val accepted_prediction_tokens: Int,
-      val rejected_prediction_tokens: Int,
+      val reasoning_tokens: Long,
+      val accepted_prediction_tokens: Long,
+      val rejected_prediction_tokens: Long,
     )
   }
 }

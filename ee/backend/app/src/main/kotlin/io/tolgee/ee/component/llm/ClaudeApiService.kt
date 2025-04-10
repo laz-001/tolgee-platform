@@ -110,9 +110,10 @@ class ClaudeApiService(
     return PromptService.Companion.PromptResult(
       response.body?.content?.first()?.text ?: throw RuntimeException(response.toString()),
       usage =
-        response.body?.usage?.input_tokens?.let {
+        response.body?.usage?.let {
           PromptResponseUsageDto(
-            totalTokens = it.toLong(),
+            inputTokens = it.input_tokens,
+            outputTokens = it.output_tokens,
           )
         },
     )
@@ -187,8 +188,8 @@ class ClaudeApiService(
     )
 
     class ResponseUsage(
-      val input_tokens: Int,
-      val output_tokens: Int,
+      val input_tokens: Long,
+      val output_tokens: Long,
     )
   }
 }

@@ -105,7 +105,8 @@ class GeminiApiService(
       usage =
         response.body?.usageMetadata?.let {
           PromptResponseUsageDto(
-            totalTokens = it.totalTokenCount,
+            inputTokens = it.promptTokenCount,
+            outputTokens = it.candidatesTokenCount,
           )
         },
     )

@@ -6,6 +6,7 @@ import io.tolgee.dtos.request.prompt.PromptRunDto
 import io.tolgee.dtos.response.prompt.PromptResponseDto
 import io.tolgee.ee.api.v2.hateoas.assemblers.PromptModelAssembler
 import io.tolgee.ee.data.prompt.VariablesResponseDto
+import io.tolgee.ee.service.LLMProviderService
 import io.tolgee.ee.service.prompt.PromptServiceEeImpl
 import io.tolgee.hateoas.prompt.PromptModel
 import io.tolgee.model.Prompt
@@ -34,6 +35,7 @@ class PromptController(
   private val promptModelAssembler: PromptModelAssembler,
   private val arrayResourcesAssembler: PagedResourcesAssembler<Prompt>,
   private val projectHolder: ProjectHolder,
+  private val providerService: LLMProviderService,
 ) {
   @GetMapping("")
   @UseDefaultPermissions
@@ -85,9 +87,10 @@ class PromptController(
   ): PromptResponseDto {
     val prompt = promptService.getPrompt(projectHolder.project.id, promptRunDto)
     val params = promptService.getLLMParamsFromPrompt(prompt, promptRunDto.keyId)
+    val organizationId = projectHolder.project.organizationOwnerId
     val response =
       promptService.runPrompt(
-        projectHolder.project.organizationOwnerId,
+        organizationId,
         params,
         promptRunDto.provider,
         LLMProviderPriority.HIGH,
@@ -95,7 +98,7 @@ class PromptController(
     return PromptResponseDto(
       prompt,
       response.response,
-      response.usage?.totalTokens ?: 0L,
+      price = response.price,
       usage = response.usage,
     )
   }

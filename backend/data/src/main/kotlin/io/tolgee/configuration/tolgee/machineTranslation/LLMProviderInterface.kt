@@ -27,6 +27,6 @@ interface LLMProviderInterface {
   var format: String?
 
   // pricing
-  var pricePerMillionInput: Long?
-  var pricePerMillionOutput: Long?
+  var pricePerMillionInput: Double?
+  var pricePerMillionOutput: Double?
 }
