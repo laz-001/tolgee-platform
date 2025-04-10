@@ -146,8 +146,8 @@ class PromptFragmentsService {
            "output": <translation>,
            "contextDescription": <description>
         }
-        $LLM_MARK_JSON
         ```
+        $LLM_MARK_JSON
         """.trimIndent(),
       ),
     )
