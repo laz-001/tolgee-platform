@@ -3,6 +3,12 @@ package io.tolgee.ee.service.prompt
 import io.tolgee.ee.service.prompt.PromptServiceEeImpl.Companion.Variable
 import org.springframework.stereotype.Service
 
+/**
+ * Signifies that model should return json, some models have a property for that
+ * other just need a strong wording, so it's up to the provider class to deal with this
+ */
+const val LLM_MARK_JSON = "[[output_valid_json]]"
+
 @Service
 class PromptFragmentsService {
   fun getAllFragments(): MutableList<Variable> {
@@ -134,12 +140,13 @@ class PromptFragmentsService {
       Variable(
         "translateJson",
         """
-        Return result in json
+        Return result in following structure:
         ```
         {
            "output": <translation>,
            "contextDescription": <description>
         }
+        $LLM_MARK_JSON
         ```
         """.trimIndent(),
       ),

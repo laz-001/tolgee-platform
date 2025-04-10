@@ -25,4 +25,8 @@ interface LLMProviderInterface {
   // ollama only
   var keepAlive: String?
   var format: String?
+
+  // pricing
+  var pricePerMillionInput: Long?
+  var pricePerMillionOutput: Long?
 }

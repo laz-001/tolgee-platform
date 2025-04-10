@@ -36,17 +36,22 @@ class GeminiApiService(
     headers.set("content-type", "application/json")
     headers.set("api-key", config.apiKey)
 
+    val inputMessages = params.messages.toMutableList()
+
+    if (params.shouldOutputJson) {
+      inputMessages.add(
+        LLMParams.Companion.LlmMessage(LLMParams.Companion.LlmMessageType.TEXT, "Return only valid json!"),
+      )
+    }
+
     val contents = mutableListOf<RequestContent>()
 
-    var promptHasJsonInside = false
-
-    params.messages.forEach {
+    inputMessages.forEach {
       if (
         it.type == LLMParams.Companion.LlmMessageType.TEXT &&
         it.text != null
       ) {
         contents.add(RequestContent(parts = listOf(RequestPart(text = it.text!!))))
-        promptHasJsonInside = promptHasJsonInside || it.text!!.lowercase().contains("json")
       } else if (
         it.type == LLMParams.Companion.LlmMessageType.IMAGE &&
         it.image != null
@@ -73,7 +78,7 @@ class GeminiApiService(
         contents = contents,
         generationConfig =
           RequestGenerationConfig(
-            responseMimeType = if (promptHasJsonInside) "application/json" else null,
+            responseMimeType = if (params.shouldOutputJson) "application/json" else null,
           ),
       )
 

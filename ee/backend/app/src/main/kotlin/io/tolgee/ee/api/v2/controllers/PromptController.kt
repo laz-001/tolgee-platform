@@ -1,7 +1,6 @@
 package io.tolgee.ee.api.v2.controllers
 
 import io.swagger.v3.oas.annotations.Operation
-import io.tolgee.dtos.LLMParams
 import io.tolgee.dtos.request.prompt.PromptDto
 import io.tolgee.dtos.request.prompt.PromptRunDto
 import io.tolgee.dtos.response.prompt.PromptResponseDto
@@ -85,11 +84,11 @@ class PromptController(
     @Valid @RequestBody promptRunDto: PromptRunDto,
   ): PromptResponseDto {
     val prompt = promptService.getPrompt(projectHolder.project.id, promptRunDto)
-    val messages = promptService.getLlmMessages(prompt, promptRunDto.keyId)
+    val params = promptService.getLLMParamsFromPrompt(prompt, promptRunDto.keyId)
     val response =
       promptService.runPrompt(
         projectHolder.project.organizationOwnerId,
-        LLMParams(messages),
+        params,
         promptRunDto.provider,
         LLMProviderPriority.HIGH,
       )

@@ -1,6 +1,5 @@
 package io.tolgee.hateoas.llmProvider
 
-import io.tolgee.configuration.tolgee.machineTranslation.LLMProviderInterface
 import io.tolgee.model.enums.LLMProviderPriority
 import io.tolgee.model.enums.LLMProviderType
 import org.springframework.hateoas.RepresentationModel
@@ -9,13 +8,13 @@ import org.springframework.hateoas.server.core.Relation
 @Relation(collectionRelation = "provider", itemRelation = "provider")
 open class LLMProviderModel(
   var id: Long,
-  override var name: String,
-  override var type: LLMProviderType,
-  override var priority: LLMProviderPriority?,
-  override var apiKey: String?,
-  override var apiUrl: String?,
-  override var model: String?,
-  override var deployment: String?,
-  override var keepAlive: String?,
-  override var format: String?,
-) : RepresentationModel<LLMProviderModel>(), LLMProviderInterface
+  var name: String,
+  var type: LLMProviderType,
+  var priority: LLMProviderPriority?,
+  var apiKey: String?,
+  var apiUrl: String?,
+  var model: String?,
+  var deployment: String?,
+  var keepAlive: String?,
+  var format: String?,
+) : RepresentationModel<LLMProviderModel>()

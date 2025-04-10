@@ -26,14 +26,19 @@ class OllamaApiService(
     val headers = HttpHeaders()
     headers.set("content-type", "application/json")
 
+    val inputMessages = params.messages.toMutableList()
+
+    if (params.shouldOutputJson) {
+      inputMessages.add(
+        LLMParams.Companion.LlmMessage(LLMParams.Companion.LlmMessageType.TEXT, "Return only valid json!"),
+      )
+    }
+
     val messages = mutableListOf<RequestMessage>()
 
-    var promptHasJsonInside = false
-
-    params.messages.forEach {
+    inputMessages.forEach {
       if (it.type == LLMParams.Companion.LlmMessageType.TEXT && it.text != null) {
         messages.add(RequestMessage(role = "user", content = it.text))
-        promptHasJsonInside = promptHasJsonInside || it.text!!.lowercase().contains("json")
       } else if (it.type == LLMParams.Companion.LlmMessageType.IMAGE && it.image != null) {
         messages.add(
           RequestMessage(
@@ -49,7 +54,7 @@ class OllamaApiService(
         model = config.model!!,
         messages = messages,
         keepAlive = config.keepAlive,
-        format = if (promptHasJsonInside && config.format == "json") "json" else null,
+        format = if (params.shouldOutputJson && config.format == "json") "json" else null,
       )
 
     val request = HttpEntity(requestBody, headers)
@@ -97,9 +102,4 @@ class OllamaApiService(
       val content: String,
     )
   }
-
-  class TooManyRequestsData(
-    val error: String? = null,
-    val retryAfter: Int? = null,
-  )
 }

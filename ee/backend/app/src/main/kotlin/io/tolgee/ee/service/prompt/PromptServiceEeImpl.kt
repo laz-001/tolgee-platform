@@ -402,61 +402,69 @@ class PromptServiceEeImpl(
   }
 
   @Transactional
-  fun getLlmMessages(
+  fun getLLMParamsFromPrompt(
     prompt: String,
     keyId: Long,
-  ): List<LLMParams.Companion.LlmMessage> {
+  ): LLMParams {
     val key = keyService.find(keyId) ?: throw NotFoundException(Message.KEY_NOT_FOUND)
+    var preparedPrompt = prompt
 
     val pattern = Regex("\\[\\[screenshot_(full|small)_(\\d+)]]")
 
-    val parts = pattern.splitWithMatches(prompt)
-    return parts.mapNotNull {
-      if (pattern.matches(it)) {
-        val match = pattern.matchEntire(it) ?: throw Error()
-        // Extract size and id from the match groups
-        val size = match.groups[1]!!.value // full or small
-        val id = match.groups[2]!!.value.toLong() // number
-        val screenshot = key.keyScreenshotReferences.find { it.screenshot.id == id }?.screenshot
-        if (screenshot == null) {
-          null
-        } else {
-          val file =
-            if (size === "full") {
-              screenshot.filename
-            } else {
-              screenshot.middleSizedFilename ?: screenshot.filename
+    val shouldOutputJson = preparedPrompt.contains(LLM_MARK_JSON)
+    if (!shouldOutputJson) {
+      preparedPrompt = preparedPrompt.replace(LLM_MARK_JSON, "")
+    }
+
+    val parts = pattern.splitWithMatches(preparedPrompt)
+    val messages =
+      parts.mapNotNull {
+        if (pattern.matches(it)) {
+          val match = pattern.matchEntire(it) ?: throw Error()
+          // Extract size and id from the match groups
+          val size = match.groups[1]!!.value // full or small
+          val id = match.groups[2]!!.value.toLong() // number
+          val screenshot = key.keyScreenshotReferences.find { it.screenshot.id == id }?.screenshot
+          if (screenshot == null) {
+            null
+          } else {
+            val file =
+              if (size === "full") {
+                screenshot.filename
+              } else {
+                screenshot.middleSizedFilename ?: screenshot.filename
+              }
+
+            var image =
+              fileStorage.readFile(
+                screenshotService.getScreenshotPath(file),
+              )
+
+            if (screenshot.keyScreenshotReferences.find { it.key.id == key.id } !== null) {
+              val converter =
+                ImageConverter(
+                  ByteArrayInputStream(
+                    fileStorage.readFile(
+                      screenshotService.getScreenshotPath(file),
+                    ),
+                  ),
+                )
+              image = converter.highlightKeys(screenshot, listOf(key.id)).toByteArray()
             }
 
-          var image =
-            fileStorage.readFile(
-              screenshotService.getScreenshotPath(file),
+            LLMParams.Companion.LlmMessage(
+              type = LLMParams.Companion.LlmMessageType.IMAGE,
+              image = image,
             )
-
-          if (screenshot.keyScreenshotReferences.find { it.key.id == key.id } !== null) {
-            val converter =
-              ImageConverter(
-                ByteArrayInputStream(
-                  fileStorage.readFile(
-                    screenshotService.getScreenshotPath(file),
-                  ),
-                ),
-              )
-            image = converter.highlightKeys(screenshot, listOf(key.id)).toByteArray()
           }
-
+        } else {
           LLMParams.Companion.LlmMessage(
-            type = LLMParams.Companion.LlmMessageType.IMAGE,
-            image = image,
+            type = LLMParams.Companion.LlmMessageType.TEXT,
+            text = it,
           )
         }
-      } else {
-        LLMParams.Companion.LlmMessage(
-          type = LLMParams.Companion.LlmMessageType.TEXT,
-          text = it,
-        )
       }
-    }
+    return LLMParams(messages, shouldOutputJson)
   }
 
   // Helper function to split and keep matches
@@ -524,8 +532,8 @@ class PromptServiceEeImpl(
   ): MtValueProvider.MtResult {
     val project = projectService.get(projectId)
     val prompt = getPrompt(projectId, data)
-    val messages = getLlmMessages(prompt, data.keyId)
-    val result = runPrompt(project.organizationOwner.id, LLMParams(messages), data.provider, priority)
+    val params = getLLMParamsFromPrompt(prompt, data.keyId)
+    val result = runPrompt(project.organizationOwner.id, params, data.provider, priority)
     return getTranslationFromPromptResult(result)
   }
 

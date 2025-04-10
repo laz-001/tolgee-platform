@@ -36,30 +36,35 @@ class OpenaiApiService(
     headers.set("content-type", "application/json")
     headers.set("api-key", config.apiKey)
 
-    val messages = mutableListOf<OpenaiMessage>()
+    val inputMessages = params.messages.toMutableList()
 
-    var promptHasJsonInside = false
+    if (params.shouldOutputJson) {
+      inputMessages.add(
+        LLMParams.Companion.LlmMessage(LLMParams.Companion.LlmMessageType.TEXT, "Return only valid json!"),
+      )
+    }
 
-    params.messages.forEach {
+    val messages = mutableListOf<RequestMessage>()
+
+    inputMessages.forEach {
       if (
         it.type == LLMParams.Companion.LlmMessageType.TEXT &&
         it.text != null
       ) {
-        messages.add(OpenaiMessage(role = "user", content = it.text!!))
-        promptHasJsonInside = promptHasJsonInside || it.text!!.lowercase().contains("json")
+        messages.add(RequestMessage(role = "user", content = it.text!!))
       } else if (
         it.type == LLMParams.Companion.LlmMessageType.IMAGE &&
         it.image != null
       ) {
         messages.add(
-          OpenaiMessage(
+          RequestMessage(
             role = "user",
             content =
               listOf(
-                OpenaiMessageContent(
+                RequestMessageContent(
                   type = "image_url",
                   image_url =
-                    OpenaiImageUrl(
+                    RequestImageUrl(
                       "data:image/jpeg;base64,${
                         Base64.getEncoder().encodeToString(it.image)
                       }",
@@ -72,13 +77,13 @@ class OpenaiApiService(
     }
 
     val requestBody =
-      OpenaiRequestBody(
+      RequestBody(
         messages = messages,
         response_format =
-          if (promptHasJsonInside) {
+          if (params.shouldOutputJson) {
             when (config.format) {
-              "json_object" -> OpenaiResponseFormat(type = "json_object", json_schema = null)
-              "json_schema" -> OpenaiResponseFormat()
+              "json_object" -> RequestResponseFormat(type = "json_object", json_schema = null)
+              "json_schema" -> RequestResponseFormat()
               else -> null
             }
           } else {
@@ -89,9 +94,9 @@ class OpenaiApiService(
 
     val request = HttpEntity(requestBody, headers)
 
-    val response: ResponseEntity<OpenaiResponse> =
+    val response: ResponseEntity<ResponseBody> =
       try {
-        restTemplate.exchange<OpenaiResponse>(
+        restTemplate.exchange<ResponseBody>(
           "${config.apiUrl}/${config.deployment}/completions?api-version=2024-12-01-preview",
           HttpMethod.POST,
           request,
@@ -127,32 +132,32 @@ class OpenaiApiService(
    */
   companion object {
     @Suppress("unused")
-    class OpenaiRequestBody(
+    class RequestBody(
       val max_completion_tokens: Long = 800,
       val stream: Boolean = false,
       @JsonInclude(JsonInclude.Include.NON_NULL)
-      val response_format: OpenaiResponseFormat? = null,
+      val response_format: RequestResponseFormat? = null,
       val stop: Boolean? = null,
-      val messages: List<OpenaiMessage>,
+      val messages: List<RequestMessage>,
       val model: String?,
       val temperature: Long? = 0,
     )
 
-    class OpenaiMessage(
+    class RequestMessage(
       val role: String,
       val content: Any,
     )
 
-    class OpenaiMessageContent(
+    class RequestMessageContent(
       val type: String,
-      val image_url: OpenaiImageUrl,
+      val image_url: RequestImageUrl,
     )
 
-    class OpenaiImageUrl(
+    class RequestImageUrl(
       val url: String,
     )
 
-    class OpenaiResponseFormat(
+    class RequestResponseFormat(
       val type: String = "json_schema",
       @JsonInclude(JsonInclude.Include.NON_NULL)
       val json_schema: Map<String, Any>? =
@@ -173,32 +178,32 @@ class OpenaiApiService(
         ),
     )
 
-    class OpenaiResponse(
-      val choices: List<OpenAiResponseChoice>,
-      val usage: OpenaiUsage,
+    class ResponseBody(
+      val choices: List<ResponseChoice>,
+      val usage: ResponseUsage,
     )
 
-    class OpenAiResponseChoice(
-      val message: OpenAiResponseMessage,
+    class ResponseChoice(
+      val message: ResponseMessage,
     )
 
-    class OpenAiResponseMessage(
+    class ResponseMessage(
       val content: String,
     )
 
-    class OpenaiUsage(
+    class ResponseUsage(
       val prompt_tokens: Int,
       val completion_tokens: Int,
       val total_tokens: Int,
-      val prompt_tokens_details: OpenaiPromptTokenDetails?,
-      val completion_tokens_details: OpenaiCompletionTokenDetails?,
+      val prompt_tokens_details: ResponsePromptTokenDetails?,
+      val completion_tokens_details: ResponseCompletionTokenDetails?,
     )
 
-    class OpenaiPromptTokenDetails(
+    class ResponsePromptTokenDetails(
       val cached_tokens: Int,
     )
 
-    class OpenaiCompletionTokenDetails(
+    class ResponseCompletionTokenDetails(
       val reasoning_tokens: Int,
       val accepted_prediction_tokens: Int,
       val rejected_prediction_tokens: Int,

@@ -2,6 +2,7 @@ package io.tolgee.dtos
 
 class LLMParams(
   val messages: List<LlmMessage>,
+  val shouldOutputJson: Boolean,
 ) {
   companion object {
     enum class LlmMessageType {
@@ -11,7 +12,7 @@ class LLMParams(
 
     class LlmMessage(
       val type: LlmMessageType,
-      val text: String? = null,
+      var text: String? = null,
       val image: ByteArray? = null,
     )
   }

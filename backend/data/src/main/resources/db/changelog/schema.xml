@@ -4334,4 +4334,14 @@
             defaultValue="DEFAULT"
         />
     </changeSet>
+    <changeSet author="stepangranat (generated)" id="1744270921935-1">
+        <addColumn tableName="llmprovider">
+            <column name="price_per_million_input" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="stepangranat (generated)" id="1744270921935-2">
+        <addColumn tableName="llmprovider">
+            <column name="price_per_million_output" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

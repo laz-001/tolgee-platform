@@ -141,6 +141,8 @@ class LLMProviderService(
         keepAlive = dto.keepAlive,
         format = dto.format,
         organization = organizationService.get(organizationId),
+        pricePerMillionInput = null,
+        pricePerMillionOutput = null,
       )
     llmProviderRepository.save(provider)
     return provider.toDto()

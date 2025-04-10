@@ -37,17 +37,22 @@ class ClaudeApiService(
     headers.set("anthropic-version", "2023-06-01")
     headers.set("x-api-key", config.apiKey)
 
+    val inputMessages = params.messages.toMutableList()
+
+    if (params.shouldOutputJson) {
+      inputMessages.add(
+        LLMParams.Companion.LlmMessage(LLMParams.Companion.LlmMessageType.TEXT, "Strictly return only valid json!"),
+      )
+    }
+
     val messages = mutableListOf<RequestMessage>()
 
-    var promptHasJsonInside = false
-
-    params.messages.forEach {
+    inputMessages.forEach {
       if (
         it.type == LLMParams.Companion.LlmMessageType.TEXT &&
         it.text != null
       ) {
         messages.add(RequestMessage(role = "user", content = it.text!!))
-        promptHasJsonInside = promptHasJsonInside || it.text!!.lowercase().contains("json")
       } else if (
         it.type == LLMParams.Companion.LlmMessageType.IMAGE &&
         it.image != null
@@ -74,7 +79,7 @@ class ClaudeApiService(
       RequestBody(
         messages = messages,
         response_format =
-          if (promptHasJsonInside) {
+          if (params.shouldOutputJson) {
             when (config.format) {
               "json_object" -> ResponseFormat(type = "json_object", json_schema = null)
               "json_schema" -> ResponseFormat()
