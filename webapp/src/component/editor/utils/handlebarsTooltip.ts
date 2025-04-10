@@ -32,9 +32,39 @@ export const handlebarsTooltip = (
         end: node.to,
         create() {
           const dom = document.createElement('div');
-          dom.textContent = variable
+          const text = document.createElement('div');
+          text.textContent = variable
             ? (variable.description ?? variable.value) || 'Empty'
             : unknownVariableMessageRef?.current ?? 'Unknown variable';
+          dom.appendChild(text);
+
+          let startNode = node.prevSibling;
+          while (startNode && startNode?.name !== '{{') {
+            startNode = startNode.prevSibling;
+          }
+          let endNode = node.nextSibling;
+          while (endNode && endNode?.name !== '}}') {
+            endNode = endNode.nextSibling;
+          }
+
+          if (variable?.value && startNode && endNode) {
+            const insertText = variable.value;
+            const onExpand = () => {
+              const transaction = context.state.update({
+                changes: {
+                  from: startNode.from,
+                  to: endNode.to,
+                  insert: insertText,
+                },
+              });
+              context.dispatch(transaction);
+            };
+
+            const button = document.createElement('button');
+            button.textContent = 'Expand';
+            button.addEventListener('click', onExpand);
+            dom.appendChild(button);
+          }
           return { dom };
         },
       };
