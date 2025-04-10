@@ -1,6 +1,5 @@
 package io.tolgee.model
 
-import io.tolgee.configuration.tolgee.machineTranslation.LLMProviderInterface
 import io.tolgee.dtos.LLMProviderDto
 import io.tolgee.model.enums.LLMProviderPriority
 import io.tolgee.model.enums.LLMProviderType
@@ -13,23 +12,23 @@ class LLMProvider(
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   var id: Long = 0L,
   @field:NotBlank
-  override var name: String = "",
+  var name: String = "",
   @field:Enumerated(EnumType.STRING)
-  override var type: LLMProviderType,
+  var type: LLMProviderType,
   @field:Enumerated(EnumType.STRING)
-  override var priority: LLMProviderPriority?,
-  override var apiKey: String?,
-  override var apiUrl: String?,
-  override var model: String?,
-  override var deployment: String?,
-  override var keepAlive: String?,
-  override var format: String?,
-  override var pricePerMillionInput: Double?,
-  override var pricePerMillionOutput: Double?,
+  var priority: LLMProviderPriority?,
+  var apiKey: String?,
+  var apiUrl: String?,
+  var model: String?,
+  var deployment: String?,
+  var keepAlive: String?,
+  var format: String?,
+  var pricePerMillionInput: Double?,
+  var pricePerMillionOutput: Double?,
   @ManyToOne
   @JoinColumn(name = "organization_id")
   var organization: Organization,
-) : AuditModel(), LLMProviderInterface {
+) : AuditModel() {
   fun toDto(): LLMProviderDto {
     return LLMProviderDto(
       id = id,
@@ -44,6 +43,7 @@ class LLMProvider(
       format = format,
       pricePerMillionInput = pricePerMillionInput,
       pricePerMillionOutput = pricePerMillionOutput,
+      attempts = null,
     )
   }
 }

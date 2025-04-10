@@ -2,7 +2,6 @@ package io.tolgee.ee.service
 
 import io.tolgee.component.CurrentDateProvider
 import io.tolgee.component.machineTranslation.TranslationApiRateLimitException
-import io.tolgee.configuration.tolgee.TolgeeProperties
 import io.tolgee.configuration.tolgee.machineTranslation.LLMProperties
 import io.tolgee.constants.Caches
 import io.tolgee.constants.Message
@@ -44,7 +43,7 @@ class LLMProviderService(
   private val currentDateProvider: CurrentDateProvider,
   private val claudeApiService: ClaudeApiService,
   private val geminiApiService: GeminiApiService,
-  private val restTemplateBuilder: RestTemplateBuilder
+  private val restTemplateBuilder: RestTemplateBuilder,
 ) {
   private val cache: Cache by lazy { cacheManager.getCache(Caches.LLM_PROVIDERS) }
   private var lastUsedMap: MutableMap<String, Long> = mutableMapOf()
@@ -106,7 +105,7 @@ class LLMProviderService(
     organizationId: Long,
     provider: String,
     priority: LLMProviderPriority?,
-    callback: (provider: LLMProviderDto) -> T
+    callback: (provider: LLMProviderDto) -> T,
   ): T {
     var lastError: Exception? = null
 
@@ -123,15 +122,16 @@ class LLMProviderService(
     throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(lastError!!.message), lastError!!)
   }
 
-  fun <T> repeatWithTimeouts(attempts: List<Long>, callback: (restTemplate: RestTemplate) -> T): T {
+  fun <T> repeatWithTimeouts(
+    attempts: List<Int>,
+    callback: (restTemplate: RestTemplate) -> T,
+  ): T {
     var lastError: Exception? = null
     for (timeout in attempts) {
-      val restTemplate = restTemplateBuilder
-        .setReadTimeout(Duration.ofSeconds(timeout))
-        .build()
+      val restTemplate = restTemplateBuilder.setReadTimeout(Duration.ofSeconds(timeout.toLong())).build()
       try {
         return callback(restTemplate)
-      } catch(e: ResourceAccessException) {
+      } catch (e: ResourceAccessException) {
         lastError = e
       }
     }
@@ -144,19 +144,23 @@ class LLMProviderService(
     params: LLMParams,
     priority: LLMProviderPriority? = null,
   ): PromptService.Companion.PromptResult {
-    val attempts = listOf(15L, 30L)
     return repeatWhileProvidersRateLimited(organizationId, provider, priority) { providerConfig ->
+      val providerService = getProviderService(providerConfig.type)
+      val attempts = providerConfig.attempts ?: providerService.defaultAttempts()
       repeatWithTimeouts(attempts) { restTemplate ->
-        val result =
-          when (providerConfig.type) {
-            LLMProviderType.OPENAI -> openaiApiService.translate(params, providerConfig, restTemplate)
-            LLMProviderType.OLLAMA -> ollamaApiService.translate(params, providerConfig, restTemplate)
-            LLMProviderType.CLAUDE -> claudeApiService.translate(params, providerConfig, restTemplate)
-            LLMProviderType.GEMINI -> geminiApiService.translate(params, providerConfig, restTemplate)
-          }
+        val result = providerService.translate(params, providerConfig, restTemplate)
         result.price = calculatePrice(providerConfig, result.usage)
         result
       }
+    }
+  }
+
+  fun getProviderService(providerType: LLMProviderType): AbstractLLMApiService {
+    return when (providerType) {
+      LLMProviderType.OPENAI -> openaiApiService
+      LLMProviderType.OLLAMA -> ollamaApiService
+      LLMProviderType.CLAUDE -> claudeApiService
+      LLMProviderType.GEMINI -> geminiApiService
     }
   }
 

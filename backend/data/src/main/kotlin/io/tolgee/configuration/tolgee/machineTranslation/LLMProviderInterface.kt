@@ -29,4 +29,7 @@ interface LLMProviderInterface {
   // pricing
   var pricePerMillionInput: Double?
   var pricePerMillionOutput: Double?
+
+  @DocProperty(description = "List of attempts (values are timeouts in seconds)")
+  var attempts: List<Int>?
 }

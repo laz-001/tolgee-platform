@@ -18,6 +18,7 @@ data class LLMProviderDto(
   override var format: String?,
   override var pricePerMillionInput: Double?,
   override var pricePerMillionOutput: Double?,
+  override var attempts: List<Int>?,
 ) : LLMProviderInterface {
   @JsonSetter("type")
   fun setType(type: String) {

@@ -5,10 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.tolgee.configuration.tolgee.machineTranslation.LLMProviderInterface
-import io.tolgee.constants.Message
 import io.tolgee.dtos.LLMParams
 import io.tolgee.dtos.response.prompt.PromptResponseUsageDto
-import io.tolgee.exceptions.BadRequestException
 import io.tolgee.service.PromptService
 import io.tolgee.util.Logging
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
@@ -26,6 +24,8 @@ import java.util.*
 @Component
 @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
 class OpenaiApiService : AbstractLLMApiService(), Logging {
+  override fun defaultAttempts(): List<Int> = listOf(15, 30)
+
   override fun translate(
     params: LLMParams,
     config: LLMProviderInterface,
@@ -94,18 +94,11 @@ class OpenaiApiService : AbstractLLMApiService(), Logging {
     val request = HttpEntity(requestBody, headers)
 
     val response: ResponseEntity<ResponseBody> =
-      try {
-        restTemplate.exchange<ResponseBody>(
-          "${config.apiUrl}/${config.deployment}/completions?api-version=2024-12-01-preview",
-          HttpMethod.POST,
-          request,
-        )
-      } catch (e: HttpClientErrorException.BadRequest) {
-        e.parse()?.get("error")?.get("message")?.toString()?.let {
-          throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(it))
-        }
-        throw e
-      }
+      restTemplate.exchange<ResponseBody>(
+        "${config.apiUrl}/${config.deployment}/completions?api-version=2024-12-01-preview",
+        HttpMethod.POST,
+        request,
+      )
 
     return PromptService.Companion.PromptResult(
       response = response.body?.choices?.first()?.message?.content ?: throw RuntimeException(response.toString()),

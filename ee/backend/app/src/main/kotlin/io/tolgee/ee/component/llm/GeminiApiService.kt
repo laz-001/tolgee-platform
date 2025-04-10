@@ -1,14 +1,9 @@
 package io.tolgee.ee.component.llm
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.tolgee.configuration.tolgee.machineTranslation.LLMProviderInterface
-import io.tolgee.constants.Message
 import io.tolgee.dtos.LLMParams
 import io.tolgee.dtos.response.prompt.PromptResponseUsageDto
-import io.tolgee.exceptions.BadRequestException
 import io.tolgee.service.PromptService
 import io.tolgee.util.Logging
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
@@ -18,7 +13,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
-import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.exchange
 import java.util.*
@@ -27,7 +21,9 @@ import java.util.*
 @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
 class GeminiApiService : AbstractLLMApiService(), Logging {
   override fun translate(
-    params: LLMParams, config: LLMProviderInterface, restTemplate: RestTemplate
+    params: LLMParams,
+    config: LLMProviderInterface,
+    restTemplate: RestTemplate,
   ): PromptService.Companion.PromptResult {
     val headers = HttpHeaders()
     headers.set("content-type", "application/json")
@@ -49,58 +45,51 @@ class GeminiApiService : AbstractLLMApiService(), Logging {
       } else if (it.type == LLMParams.Companion.LlmMessageType.IMAGE && it.image != null) {
         contents.add(
           RequestContent(
-            parts = listOf(
-              RequestPart(
-                inlineData = RequestInlineData(
-                  mimeType = "image/png",
-                  data = Base64.getEncoder().encodeToString(it.image),
+            parts =
+              listOf(
+                RequestPart(
+                  inlineData =
+                    RequestInlineData(
+                      mimeType = "image/png",
+                      data = Base64.getEncoder().encodeToString(it.image),
+                    ),
                 ),
               ),
-            ),
           ),
         )
       }
     }
 
-    val requestBody = RequestBody(
-      contents = contents,
-      generationConfig = RequestGenerationConfig(
-        responseMimeType = if (params.shouldOutputJson) "application/json" else null,
-      ),
-    )
+    val requestBody =
+      RequestBody(
+        contents = contents,
+        generationConfig =
+          RequestGenerationConfig(
+            responseMimeType = if (params.shouldOutputJson) "application/json" else null,
+          ),
+      )
 
     val request = HttpEntity(requestBody, headers)
 
-    val response: ResponseEntity<ResponseBody> = try {
+    val response: ResponseEntity<ResponseBody> =
       restTemplate.exchange<ResponseBody>(
         "${config.apiUrl}/v1beta/models/${config.model}:generateContent?key=${config.apiKey}",
         HttpMethod.POST,
         request,
       )
-    } catch (e: HttpClientErrorException.BadRequest) {
-      e.parse()?.get("error")?.get("message")?.toString()?.let {
-        throw BadRequestException(Message.LLM_PROVIDER_ERROR, listOf(it))
-      }
-      throw e
-    }
 
     return PromptService.Companion.PromptResult(
-      response = response.body?.candidates?.first()?.content?.parts?.first()?.text
-        ?: throw RuntimeException(response.toString()),
-      usage = response.body?.usageMetadata?.let {
-        PromptResponseUsageDto(
-          inputTokens = it.promptTokenCount,
-          outputTokens = it.candidatesTokenCount,
-        )
-      },
+      response =
+        response.body?.candidates?.first()?.content?.parts?.first()?.text
+          ?: throw RuntimeException(response.toString()),
+      usage =
+        response.body?.usageMetadata?.let {
+          PromptResponseUsageDto(
+            inputTokens = it.promptTokenCount,
+            outputTokens = it.candidatesTokenCount,
+          )
+        },
     )
-  }
-
-  private fun HttpClientErrorException.parse(): JsonNode? {
-    if (!this.responseBodyAsString.isNullOrBlank()) {
-      return jacksonObjectMapper().readValue(this.responseBodyAsString)
-    }
-    return null
   }
 
   /**

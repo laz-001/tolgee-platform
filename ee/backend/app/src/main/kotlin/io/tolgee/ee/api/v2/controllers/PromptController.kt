@@ -6,8 +6,8 @@ import io.tolgee.dtos.request.prompt.PromptRunDto
 import io.tolgee.dtos.response.prompt.PromptResponseDto
 import io.tolgee.ee.api.v2.hateoas.assemblers.PromptModelAssembler
 import io.tolgee.ee.data.prompt.VariablesResponseDto
-import io.tolgee.ee.service.LLMProviderService
 import io.tolgee.ee.service.prompt.PromptServiceEeImpl
+import io.tolgee.ee.service.prompt.PromptVariablesService
 import io.tolgee.hateoas.prompt.PromptModel
 import io.tolgee.model.Prompt
 import io.tolgee.model.enums.LLMProviderPriority
@@ -35,7 +35,7 @@ class PromptController(
   private val promptModelAssembler: PromptModelAssembler,
   private val arrayResourcesAssembler: PagedResourcesAssembler<Prompt>,
   private val projectHolder: ProjectHolder,
-  private val providerService: LLMProviderService,
+  private val promptVariablesService: PromptVariablesService,
 ) {
   @GetMapping("")
   @UseDefaultPermissions
@@ -111,7 +111,7 @@ class PromptController(
     @RequestParam targetLanguageId: Long?,
   ): VariablesResponseDto {
     return VariablesResponseDto(
-      promptService.getVariables(projectHolder.project.id, keyId, targetLanguageId)
+      promptVariablesService.getVariables(projectHolder.project.id, keyId, targetLanguageId)
         .map { it.toPromptVariableDto() }.toMutableList(),
     )
   }

@@ -25,6 +25,7 @@ class LLMProperties {
     override var format: String?,
     override var pricePerMillionInput: Double?,
     override var pricePerMillionOutput: Double?,
+    override var attempts: List<Int>? = null,
   ) : LLMProviderInterface {
     fun toDto(id: Long): LLMProviderDto {
       return LLMProviderDto(
@@ -40,6 +41,7 @@ class LLMProperties {
         format = format,
         pricePerMillionInput = pricePerMillionInput,
         pricePerMillionOutput = pricePerMillionOutput,
+        attempts = attempts,
       )
     }
   }
