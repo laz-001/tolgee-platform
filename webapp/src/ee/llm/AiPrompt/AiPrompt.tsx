@@ -264,9 +264,10 @@ export const AiPrompt: React.FC<PanelContentProps> = (props) => {
         />
 
         <Typography variant="caption" minHeight={20}>
-          {usage && (
+          {usage?.inputTokens && (
             <>
-              {`tokens: ${usage.totalTokens}`}
+              {`tokens: ${usage.inputTokens + (usage.outputTokens ?? 0)}`}
+              {`, mtcredits: ${promptLoadable.data!.price! / 100}`}
               {typeof usage.cachedTokens === 'number' &&
                 `, cached: ${usage.cachedTokens}`}
             </>

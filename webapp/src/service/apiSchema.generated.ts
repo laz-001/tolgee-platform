@@ -2881,7 +2881,7 @@ export interface components {
       model?: string;
       name: string;
       priority?: "LOW" | "HIGH";
-      type: "OPENAI" | "OLLAMA" | "CLAUDE";
+      type: "OPENAI" | "OLLAMA" | "CLAUDE" | "GEMINI";
     };
     LLMProviderRequest: {
       apiKey?: string;
@@ -2892,7 +2892,7 @@ export interface components {
       model?: string;
       name: string;
       priority?: "LOW" | "HIGH";
-      type: "OPENAI" | "OLLAMA" | "CLAUDE";
+      type: "OPENAI" | "OLLAMA" | "CLAUDE" | "GEMINI";
     };
     LLMProviderSimpleModel: {
       name: string;
@@ -3924,8 +3924,8 @@ export interface components {
       template: string;
     };
     PromptResponseDto: {
-      /** Format: int64 */
-      price: number;
+      /** Format: int32 */
+      price?: number;
       prompt: string;
       result: string;
       usage?: components["schemas"]["PromptResponseUsageDto"];
@@ -3934,7 +3934,9 @@ export interface components {
       /** Format: int64 */
       cachedTokens?: number;
       /** Format: int64 */
-      totalTokens?: number;
+      inputTokens?: number;
+      /** Format: int64 */
+      outputTokens?: number;
     };
     PromptRunDto: {
       /** Format: int64 */

@@ -29,7 +29,7 @@ import org.springframework.web.client.HttpClientErrorException.TooManyRequests
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.roundToInt
 
-const val TOKEN_PRICE_PER_MILION = 0.000_035 // EUR
+const val TOKEN_PRICE = 0.000_035 // EUR
 
 @Service
 class LLMProviderService(
@@ -199,20 +199,18 @@ class LLMProviderService(
     providerConfig: LLMProviderDto,
     usage: PromptResponseUsageDto?,
   ): Int {
-    val pricePerMillionInput: Double = providerConfig.pricePerMillionInput ?: 0.0
-    val pricePerMillionOutput: Double = providerConfig.pricePerMillionOutput ?: 0.0
+    val pricePerTokenInput: Double = (providerConfig.pricePerMillionInput ?: 0.0) / 1_000_000.0
+    val pricePerTokenOutput: Double = (providerConfig.pricePerMillionOutput ?: 0.0) / 1_000_000.0
     val inputTokens: Long = usage?.inputTokens ?: 0L
     val outputTokens: Long = usage?.outputTokens ?: 0L
     val cachedTokens: Long = usage?.cachedTokens ?: 0L
 
-    return (
-      (
-        (
-          ((inputTokens - cachedTokens) * pricePerMillionInput) +
-            (outputTokens * pricePerMillionOutput)
-        )
-      ) * TOKEN_PRICE_PER_MILION * 100
-    ).roundToInt()
+    val inputPrice = (inputTokens - cachedTokens) * pricePerTokenInput
+    val outputPrice = (outputTokens) * pricePerTokenOutput
+
+    val price = inputPrice + outputPrice
+
+    return ((price / TOKEN_PRICE) * 100).roundToInt()
   }
 
   companion object {
