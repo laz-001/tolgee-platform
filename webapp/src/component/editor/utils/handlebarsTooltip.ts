@@ -38,6 +38,7 @@ export const handlebarsTooltip = (
             : unknownVariableMessageRef?.current ?? 'Unknown variable';
           dom.appendChild(text);
 
+          // find expression boundaries `{{` and `}}`
           let startNode = node.prevSibling;
           while (startNode && startNode?.name !== '{{') {
             startNode = startNode.prevSibling;
@@ -47,7 +48,12 @@ export const handlebarsTooltip = (
             endNode = endNode.nextSibling;
           }
 
-          if (variable?.value && startNode && endNode) {
+          if (
+            variable?.value &&
+            startNode &&
+            endNode &&
+            variable.type === 'FRAGMENT'
+          ) {
             const insertText = variable.value;
             const onExpand = () => {
               const transaction = context.state.update({

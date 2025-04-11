@@ -19,6 +19,7 @@ import io.tolgee.exceptions.BadRequestException
 import io.tolgee.exceptions.NotFoundException
 import io.tolgee.model.Prompt
 import io.tolgee.model.enums.LLMProviderPriority
+import io.tolgee.model.enums.PromptVariableType
 import io.tolgee.repository.PromptRepository
 import io.tolgee.service.PromptService
 import io.tolgee.service.key.KeyService
@@ -349,18 +350,27 @@ class PromptServiceEeImpl(
       var lazyValue: (() -> String?)? = null,
       val description: String? = null,
       val props: MutableList<Variable> = mutableListOf(),
+      val type: PromptVariableType? = null,
     ) {
       fun toPromptVariableDto(): PromptVariableDto {
+        val computedType =
+          if (props.isNotEmpty()) {
+            PromptVariableType.OBJECT
+          } else {
+            type ?: PromptVariableType.STRING
+          }
+
         return PromptVariableDto(
           name = name,
           description = description,
           value = value,
           props =
-            if (props.size != 0) {
+            if (props.isNotEmpty()) {
               props.map { it.toPromptVariableDto() }.toMutableList()
             } else {
               null
             },
+          type = computedType,
         )
       }
     }

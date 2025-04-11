@@ -1,6 +1,7 @@
 package io.tolgee.ee.service.prompt
 
 import io.tolgee.ee.service.prompt.PromptServiceEeImpl.Companion.Variable
+import io.tolgee.model.enums.PromptVariableType
 import org.springframework.stereotype.Service
 
 /**
@@ -21,6 +22,7 @@ class PromptFragmentsService {
         You are a translator in software localization platform, that strictly follows instructions.
         Each translation has a translation key, which usually reflects the structure of the app, so similar keys are usually related.
         """.trimIndent(),
+        type = PromptVariableType.FRAGMENT,
       ),
     )
 
@@ -33,6 +35,7 @@ class PromptFragmentsService {
         Keep the style of source text.
         All translations are part of software product, don't transform them into sentences.
         """.trimIndent(),
+        type = PromptVariableType.FRAGMENT,
       ),
     )
 
@@ -53,6 +56,7 @@ class PromptFragmentsService {
         ```
         {{/with}}          
         """.trimIndent(),
+        type = PromptVariableType.FRAGMENT,
       ),
     )
 
@@ -66,6 +70,7 @@ class PromptFragmentsService {
         {{this}}
         {{/with}}
         """.trimIndent(),
+        type = PromptVariableType.FRAGMENT,
       ),
     )
 
@@ -79,6 +84,7 @@ class PromptFragmentsService {
         {{this}}
         {{/with}}
         """.trimIndent(),
+        type = PromptVariableType.FRAGMENT,
       ),
     )
 
@@ -102,6 +108,7 @@ class PromptFragmentsService {
         Translation can contain also different i18n placeholder formats.
         If you spot some kind, don't translate them and keep them in the original format.
         """.trimIndent(),
+        type = PromptVariableType.FRAGMENT,
       ),
     )
 
@@ -117,6 +124,7 @@ class PromptFragmentsService {
         ```
         {{/with}}
         """.trimIndent(),
+        type = PromptVariableType.FRAGMENT,
       ),
     )
 
@@ -124,6 +132,7 @@ class PromptFragmentsService {
       Variable(
         "screenshots",
         """{{screenshots.first}}""",
+        type = PromptVariableType.FRAGMENT,
       ),
     )
 
@@ -133,6 +142,7 @@ class PromptFragmentsService {
         """
         Translate ```{{source.translation}}``` from {{source.language}} to {{target.language}}.
         """.trimIndent(),
+        type = PromptVariableType.FRAGMENT,
       ),
     )
 
@@ -140,7 +150,8 @@ class PromptFragmentsService {
       Variable(
         "translateJson",
         """
-        Return result in following structure:
+        Return translation output and also describe a context in a few words.
+        Follow this json format:
         ```
         {
            "output": <translation>,
@@ -149,6 +160,7 @@ class PromptFragmentsService {
         ```
         $LLM_MARK_JSON
         """.trimIndent(),
+        type = PromptVariableType.FRAGMENT,
       ),
     )
 

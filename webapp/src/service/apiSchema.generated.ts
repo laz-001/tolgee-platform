@@ -3964,6 +3964,7 @@ export interface components {
       name: string;
       /** @description List of nested properties for this variable, allowing hierarchical structuring. */
       props?: components["schemas"]["PromptVariableDto"][] | null;
+      type: "FRAGMENT" | "OBJECT" | "STRING";
       value?: string;
     };
     PropertyModification: {
