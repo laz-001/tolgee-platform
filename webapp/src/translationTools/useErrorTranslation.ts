@@ -187,6 +187,8 @@ export function useErrorTranslation() {
         });
       case 'llm_rate_limited':
         return t('llm_rate_limited');
+      case 'llm_provider_not_returned_json':
+        return t('llm_provider_not_returned_json');
       default:
         return code;
     }

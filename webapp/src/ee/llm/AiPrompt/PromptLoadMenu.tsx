@@ -103,10 +103,7 @@ export const PromptLoadMenu = ({ onSelect, projectId }: Props) => {
                   size="small"
                   onClick={stopAndPrevent(() =>
                     deletePrompt.mutate({
-                      path: { projectId },
-                      query: {
-                        promptId: item.id!,
-                      },
+                      path: { projectId, promptId: item.id! },
                     })
                   )}
                 >

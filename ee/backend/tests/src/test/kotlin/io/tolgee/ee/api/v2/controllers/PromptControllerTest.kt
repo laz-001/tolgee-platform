@@ -28,7 +28,7 @@ class PromptControllerTest : ProjectAuthControllerTest("/v2/projects/") {
           pricePerMillionOutput = 2.0,
         ),
       )
-    internalProperties.fakeLLMProviders = true
+    internalProperties.fakeLlmProviders = true
     this.userAccount = testData.projectEditor.self
   }
 
@@ -129,7 +129,9 @@ class PromptControllerTest : ProjectAuthControllerTest("/v2/projects/") {
       node("prompt").isString.contains("Hi LLM")
       node("prompt").isString.contains("key=Key 1")
       node("prompt").isString.contains("translation=English translation 1")
-      node("result").isString.contains("default response")
+      node("result").isString.contains("response from: default")
+      node("parsedJson.output").isEqualTo("response from: default")
+      node("parsedJson.contextDescription").isEqualTo("context description from: default")
       node("price").isNotEqualTo(0)
       node("usage.inputTokens").isEqualTo(42)
       node("usage.outputTokens").isEqualTo(42)

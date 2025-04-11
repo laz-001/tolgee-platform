@@ -99,6 +99,7 @@ class PromptController(
     return PromptResponseDto(
       prompt,
       response.response,
+      response.parsedJson,
       price = response.price,
       usage = response.usage,
     )

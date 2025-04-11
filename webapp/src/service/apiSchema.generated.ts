@@ -2580,6 +2580,7 @@ export interface components {
       ssoInfo?: components["schemas"]["PublicSsoTenantModel"];
       userInfo?: components["schemas"]["PrivateUserAccountModel"];
     };
+    JsonNode: { [key: string]: unknown };
     JwtAuthenticationResponse: {
       accessToken?: string;
       tokenType?: string;
@@ -3935,6 +3936,7 @@ export interface components {
       template: string;
     };
     PromptResponseDto: {
+      parsedJson?: components["schemas"]["JsonNode"];
       /** Format: int32 */
       price?: number;
       prompt: string;
@@ -14984,10 +14986,8 @@ export interface operations {
   };
   deletePrompt: {
     parameters: {
-      query: {
-        promptId: number;
-      };
       path: {
+        promptId: number;
         projectId: number;
       };
     };

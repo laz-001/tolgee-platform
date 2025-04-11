@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -157,14 +157,6 @@ export const AiPrompt: React.FC<PanelContentProps> = (props) => {
     );
   }
 
-  const jsonValue = useMemo(() => {
-    try {
-      return JSON.parse(promptLoadable.data?.result ?? '');
-    } catch (e) {
-      return undefined;
-    }
-  }, [promptLoadable.data?.result]);
-
   const usage = promptLoadable.data?.usage;
 
   return (
@@ -258,7 +250,7 @@ export const AiPrompt: React.FC<PanelContentProps> = (props) => {
       <Box sx={{ margin: '8px', display: 'grid' }}>
         <AiResult
           raw={promptLoadable.data?.result}
-          json={jsonValue}
+          json={promptLoadable.data?.parsedJson}
           isPlural={props.keyData?.keyIsPlural}
           locale={props.language?.tag}
         />

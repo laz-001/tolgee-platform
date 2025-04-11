@@ -166,8 +166,8 @@ class LLMProviderService(
     val json =
       """
       {
-        "output": "${config.name} response",
-        "contextDescription": "${config.name} contextDescription",
+        "output": "response from: ${config.name}",
+        "contextDescription": "context description from: ${config.name}"
       }
       """.trimIndent()
     return PromptService.Companion.PromptResult(
@@ -183,7 +183,7 @@ class LLMProviderService(
     config: LLMProviderInterface,
     restTemplate: RestTemplate,
   ): PromptService.Companion.PromptResult {
-    if (internalProperties.fakeLLMProviders) {
+    if (internalProperties.fakeLlmProviders) {
       return getFakedResponse(params, config, restTemplate)
     }
     return providerService.translate(params, config, restTemplate)
