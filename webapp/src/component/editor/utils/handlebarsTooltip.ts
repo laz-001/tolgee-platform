@@ -23,6 +23,7 @@ export const handlebarsTooltip = (
       let variable: PromptVariableDto | undefined = {
         name: '',
         props: variablesRef.current,
+        type: 'OBJECT',
       };
       path.forEach(
         (item) => (variable = variable?.props?.find((i) => i.name === item))
