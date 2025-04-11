@@ -1038,6 +1038,8 @@ export interface components {
         | "webhooks.manage"
         | "tasks.view"
         | "tasks.edit"
+        | "prompts.view"
+        | "prompts.edit"
       )[];
       /**
        * @description List of languages user can change state to. If null, changing state of all language values is permitted.
@@ -1403,6 +1405,8 @@ export interface components {
         | "webhooks.manage"
         | "tasks.view"
         | "tasks.edit"
+        | "prompts.view"
+        | "prompts.edit"
       )[];
       /**
        * @description List of languages user can change state to. If null, changing state of all language values is permitted.
@@ -2151,7 +2155,8 @@ export interface components {
         | "prompt_not_found"
         | "llm_provider_not_returned_json"
         | "llm_template_parsing_error"
-        | "llm_rate_limited";
+        | "llm_rate_limited"
+        | "llm_provider_timeout";
       params?: { [key: string]: unknown }[];
     };
     ExistenceEntityDescription: {
@@ -2328,7 +2333,9 @@ export interface components {
         | "content-delivery.publish"
         | "webhooks.manage"
         | "tasks.view"
-        | "tasks.edit";
+        | "tasks.edit"
+        | "prompts.view"
+        | "prompts.edit";
     };
     IdentifyRequest: {
       anonymousUserId: string;
@@ -2885,7 +2892,7 @@ export interface components {
     };
     LLMProviderRequest: {
       apiKey?: string;
-      apiUrl?: string;
+      apiUrl: string;
       deployment?: string;
       format?: string;
       keepAlive?: string;
@@ -3383,7 +3390,7 @@ export interface components {
     };
     PagedModelPromptModel: {
       _embedded?: {
-        prompt?: components["schemas"]["PromptModel"][];
+        prompts?: components["schemas"]["PromptModel"][];
       };
       page?: components["schemas"]["PageMetadata"];
     };
@@ -3534,6 +3541,8 @@ export interface components {
         | "webhooks.manage"
         | "tasks.view"
         | "tasks.edit"
+        | "prompts.view"
+        | "prompts.edit"
       )[];
       /**
        * @description List of languages user can change state to. If null, changing state of all language values is permitted.
@@ -3596,6 +3605,8 @@ export interface components {
         | "webhooks.manage"
         | "tasks.view"
         | "tasks.edit"
+        | "prompts.view"
+        | "prompts.edit"
       )[];
       /**
        * @description List of languages user can change state to. If null, changing state of all language values is permitted.
@@ -4765,7 +4776,8 @@ export interface components {
         | "prompt_not_found"
         | "llm_provider_not_returned_json"
         | "llm_template_parsing_error"
-        | "llm_rate_limited";
+        | "llm_rate_limited"
+        | "llm_provider_timeout";
       params?: { [key: string]: unknown }[];
       success: boolean;
     };
@@ -18855,6 +18867,8 @@ export interface operations {
               | "webhooks.manage"
               | "tasks.view"
               | "tasks.edit"
+              | "prompts.view"
+              | "prompts.edit"
             )[];
           };
         };

@@ -78,7 +78,7 @@ export const PromptSaveMenu = ({ projectId, data }: Props) => {
           {existingPrompts.data?.page?.totalElements !== 0 && (
             <Box display="grid">
               <CompactListSubheader>Update existing</CompactListSubheader>
-              {existingPrompts.data?._embedded?.prompt?.map((item) => (
+              {existingPrompts.data?._embedded?.prompts?.map((item) => (
                 <MenuItem
                   key={item.id}
                   onClick={() => {

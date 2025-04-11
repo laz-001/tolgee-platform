@@ -11,8 +11,10 @@ import io.tolgee.ee.service.prompt.PromptVariablesService
 import io.tolgee.hateoas.prompt.PromptModel
 import io.tolgee.model.Prompt
 import io.tolgee.model.enums.LLMProviderPriority
+import io.tolgee.model.enums.Scope
 import io.tolgee.openApiDocs.OpenApiOrderExtension
 import io.tolgee.security.ProjectHolder
+import io.tolgee.security.authorization.RequiresProjectPermissions
 import io.tolgee.security.authorization.UseDefaultPermissions
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
@@ -38,7 +40,7 @@ class PromptController(
   private val promptVariablesService: PromptVariablesService,
 ) {
   @GetMapping("")
-  @UseDefaultPermissions
+  @RequiresProjectPermissions([Scope.PROMPTS_VIEW])
   fun getAllPaged(
     @ParameterObject pageable: Pageable,
     @RequestParam search: String?,
@@ -48,13 +50,13 @@ class PromptController(
   }
 
   @GetMapping("default")
-  @UseDefaultPermissions
+  @RequiresProjectPermissions([Scope.PROMPTS_VIEW])
   fun getDefaultPrompt(): PromptDto {
     return promptService.getDefaultPrompt()
   }
 
   @PostMapping("")
-  @UseDefaultPermissions
+  @RequiresProjectPermissions([io.tolgee.model.enums.Scope.PROMPTS_EDIT])
   fun createPrompt(
     @RequestBody @Valid dto: PromptDto,
   ): PromptModel {
@@ -63,7 +65,7 @@ class PromptController(
   }
 
   @PutMapping("/{promptId}")
-  @UseDefaultPermissions
+  @RequiresProjectPermissions([io.tolgee.model.enums.Scope.PROMPTS_EDIT])
   fun updatePrompt(
     @PathVariable promptId: Long,
     @RequestBody @Valid dto: PromptDto,
@@ -73,15 +75,15 @@ class PromptController(
   }
 
   @DeleteMapping("/{promptId}")
-  @UseDefaultPermissions
+  @RequiresProjectPermissions([io.tolgee.model.enums.Scope.PROMPTS_EDIT])
   fun deletePrompt(
-    @RequestParam promptId: Long,
+    @PathVariable promptId: Long,
   ) {
     promptService.deletePrompt(projectHolder.project.id, promptId)
   }
 
   @PostMapping("run")
-  @UseDefaultPermissions
+  @RequiresProjectPermissions([io.tolgee.model.enums.Scope.PROMPTS_EDIT])
   fun run(
     @Valid @RequestBody promptRunDto: PromptRunDto,
   ): PromptResponseDto {
@@ -105,7 +107,7 @@ class PromptController(
 
   @GetMapping("get-variables")
   @Operation(summary = "Get variables")
-  @UseDefaultPermissions
+  @RequiresProjectPermissions([io.tolgee.model.enums.Scope.PROMPTS_EDIT])
   fun variables(
     @RequestParam keyId: Long?,
     @RequestParam targetLanguageId: Long?,

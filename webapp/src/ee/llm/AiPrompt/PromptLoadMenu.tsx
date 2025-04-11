@@ -58,7 +58,7 @@ export const PromptLoadMenu = ({ onSelect, projectId }: Props) => {
     prompts.push(defaultPrompt.data);
   }
 
-  existingPrompts.data?._embedded?.prompt?.forEach((item) => {
+  existingPrompts.data?._embedded?.prompts?.forEach((item) => {
     prompts.push(item);
   });
 

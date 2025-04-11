@@ -2,7 +2,9 @@ package io.tolgee.ee.service
 
 import io.tolgee.component.CurrentDateProvider
 import io.tolgee.component.machineTranslation.TranslationApiRateLimitException
+import io.tolgee.configuration.tolgee.InternalProperties
 import io.tolgee.configuration.tolgee.machineTranslation.LLMProperties
+import io.tolgee.configuration.tolgee.machineTranslation.LLMProviderInterface
 import io.tolgee.constants.Caches
 import io.tolgee.constants.Message
 import io.tolgee.dtos.LLMParams
@@ -44,6 +46,7 @@ class LLMProviderService(
   private val claudeApiService: ClaudeApiService,
   private val geminiApiService: GeminiApiService,
   private val restTemplateBuilder: RestTemplateBuilder,
+  private val internalProperties: InternalProperties
 ) {
   private val cache: Cache by lazy { cacheManager.getCache(Caches.LLM_PROVIDERS) }
   private var lastUsedMap: MutableMap<String, Long> = mutableMapOf()
@@ -148,11 +151,37 @@ class LLMProviderService(
       val providerService = getProviderService(providerConfig.type)
       val attempts = providerConfig.attempts ?: providerService.defaultAttempts()
       repeatWithTimeouts(attempts) { restTemplate ->
-        val result = providerService.translate(params, providerConfig, restTemplate)
+        val result = getProviderResponse(providerService, params, providerConfig, restTemplate)
         result.price = calculatePrice(providerConfig, result.usage)
         result
       }
     }
+  }
+
+  fun getFakedResponse(params: LLMParams, config: LLMProviderInterface, restTemplate: RestTemplate): PromptService.Companion.PromptResult {
+    val json = """
+      {
+        "output": "${config.name} response",
+        "contextDescription": "${config.name} contextDescription",
+      }
+    """.trimIndent()
+    return PromptService.Companion.PromptResult(
+      response = json,
+      usage = PromptResponseUsageDto(inputTokens = 42, outputTokens = 42, cachedTokens = 21),
+      price = 42,
+    )
+  }
+
+  fun getProviderResponse(
+    providerService: AbstractLLMApiService,
+    params: LLMParams,
+    config: LLMProviderInterface,
+    restTemplate: RestTemplate,
+  ): PromptService.Companion.PromptResult {
+    if (internalProperties.fakeLLMProviders) {
+      return getFakedResponse(params, config, restTemplate)
+    }
+    return providerService.translate(params, config, restTemplate)
   }
 
   fun getProviderService(providerType: LLMProviderType): AbstractLLMApiService {

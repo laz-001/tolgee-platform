@@ -3,7 +3,7 @@ package io.tolgee.hateoas.prompt
 import org.springframework.hateoas.RepresentationModel
 import org.springframework.hateoas.server.core.Relation
 
-@Relation(collectionRelation = "prompt", itemRelation = "prompt")
+@Relation(collectionRelation = "prompts", itemRelation = "prompt")
 open class PromptModel(
   val id: Long,
   val name: String,

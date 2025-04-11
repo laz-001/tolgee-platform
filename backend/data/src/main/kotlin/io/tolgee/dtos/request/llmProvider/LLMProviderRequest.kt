@@ -7,13 +7,13 @@ import io.tolgee.model.enums.LLMProviderType
 data class LLMProviderRequest(
   var name: String,
   var type: LLMProviderType,
-  var priority: LLMProviderPriority?,
-  var apiKey: String?,
-  var apiUrl: String?,
-  var model: String?,
-  var deployment: String?,
-  var keepAlive: String?,
-  var format: String?,
+  var apiUrl: String,
+  var priority: LLMProviderPriority? = null,
+  var apiKey: String? = null,
+  var model: String? = null,
+  var deployment: String? = null,
+  var keepAlive: String? = null,
+  var format: String? = null,
 ) {
   @JsonSetter("type")
   fun setType(type: String) {

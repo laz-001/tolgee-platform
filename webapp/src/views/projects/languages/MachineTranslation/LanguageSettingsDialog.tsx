@@ -298,7 +298,7 @@ export const LanguageSettingsDialog = ({
                               displayEmpty
                             >
                               <MenuItem value={null as any}>default</MenuItem>
-                              {prompts.data?._embedded?.prompt?.map((item) => {
+                              {prompts.data?._embedded?.prompts?.map((item) => {
                                 return (
                                   <MenuItem key={item.id} value={item.id}>
                                     {item.name}

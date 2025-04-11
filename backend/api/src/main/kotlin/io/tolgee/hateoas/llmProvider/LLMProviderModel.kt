@@ -5,7 +5,7 @@ import io.tolgee.model.enums.LLMProviderType
 import org.springframework.hateoas.RepresentationModel
 import org.springframework.hateoas.server.core.Relation
 
-@Relation(collectionRelation = "provider", itemRelation = "provider")
+@Relation(collectionRelation = "providers", itemRelation = "provider")
 open class LLMProviderModel(
   var id: Long,
   var name: String,

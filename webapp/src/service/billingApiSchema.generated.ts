@@ -748,7 +748,9 @@ export interface components {
         | "llm_provider_error"
         | "prompt_not_found"
         | "llm_provider_not_returned_json"
-        | "llm_template_parsing_error";
+        | "llm_template_parsing_error"
+        | "llm_rate_limited"
+        | "llm_provider_timeout";
       params?: { [key: string]: unknown }[];
     };
     GetMySubscriptionDto: {
@@ -789,21 +791,27 @@ export interface components {
       /** @description The Total amount with tax */
       total: number;
     };
-    LLMParams: {
-      messages: components["schemas"]["LlmMessage"][];
-    };
-    LlmMessage: {
-      /** Format: byte */
-      image?: string;
-      text?: string;
-      type: "TEXT" | "IMAGE";
-    };
     MtCreditsPriceModel: {
       /** Format: int64 */
       amount: number;
       /** Format: int64 */
       id: number;
       price: number;
+    };
+    MtMetadata: {
+      /** Format: int64 */
+      keyId: number;
+      /** Format: int64 */
+      organizationId: number;
+      prompt: string;
+      provider: string;
+    };
+    MtResult: {
+      contextDescription?: string;
+      /** Format: int32 */
+      price: number;
+      translated?: string;
+      usage?: components["schemas"]["PromptResponseUsageDto"];
     };
     OrganizationWithSubscriptionsModel: {
       cloudSubscription?: components["schemas"]["AdministrationCloudSubscriptionModel"];
@@ -892,6 +900,8 @@ export interface components {
         | "webhooks.manage"
         | "tasks.view"
         | "tasks.edit"
+        | "prompts.view"
+        | "prompts.edit"
       )[];
       /**
        * @description List of languages user can change state to. If null, changing state of all language values is permitted.
@@ -955,6 +965,26 @@ export interface components {
       licenseKey: string;
       /** Format: int64 */
       seats: number;
+    };
+    PromptResponseUsageDto: {
+      /** Format: int64 */
+      cachedTokens?: number;
+      /** Format: int64 */
+      inputTokens?: number;
+      /** Format: int64 */
+      outputTokens?: number;
+    };
+    ProviderTranslateParams: {
+      formality?: "FORMAL" | "INFORMAL" | "DEFAULT";
+      isBatch: boolean;
+      keyName?: string;
+      metadata?: components["schemas"]["MtMetadata"];
+      pluralFormExamples?: { [key: string]: string };
+      pluralForms?: { [key: string]: string };
+      sourceLanguageTag: string;
+      targetLanguageTag: string;
+      text: string;
+      textRaw: string;
     };
     ReleaseKeyDto: {
       licenseKey: string;
@@ -4305,7 +4335,11 @@ export interface operations {
   translate: {
     responses: {
       /** OK */
-      200: unknown;
+      200: {
+        content: {
+          "application/json": components["schemas"]["MtResult"];
+        };
+      };
       /** Bad Request */
       400: {
         content: {
@@ -4341,7 +4375,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["LLMParams"];
+        "application/json": components["schemas"]["ProviderTranslateParams"];
       };
     };
   };

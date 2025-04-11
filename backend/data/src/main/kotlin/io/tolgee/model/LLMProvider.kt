@@ -14,17 +14,17 @@ class LLMProvider(
   @field:NotBlank
   var name: String = "",
   @field:Enumerated(EnumType.STRING)
-  var type: LLMProviderType,
+  var type: LLMProviderType = LLMProviderType.OPENAI,
   @field:Enumerated(EnumType.STRING)
-  var priority: LLMProviderPriority?,
-  var apiKey: String?,
-  var apiUrl: String?,
-  var model: String?,
-  var deployment: String?,
-  var keepAlive: String?,
-  var format: String?,
-  var pricePerMillionInput: Double?,
-  var pricePerMillionOutput: Double?,
+  var priority: LLMProviderPriority? = null,
+  var apiKey: String? = null,
+  var apiUrl: String? = null,
+  var model: String? = null,
+  var deployment: String? = null,
+  var keepAlive: String? = null,
+  var format: String? = null,
+  var pricePerMillionInput: Double? = null,
+  var pricePerMillionOutput: Double? = null,
   @ManyToOne
   @JoinColumn(name = "organization_id")
   var organization: Organization,
