@@ -15,7 +15,6 @@ import io.tolgee.model.enums.Scope
 import io.tolgee.openApiDocs.OpenApiOrderExtension
 import io.tolgee.security.ProjectHolder
 import io.tolgee.security.authorization.RequiresProjectPermissions
-import io.tolgee.security.authorization.UseDefaultPermissions
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable

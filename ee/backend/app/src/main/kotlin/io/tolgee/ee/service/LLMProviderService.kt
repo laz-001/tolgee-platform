@@ -46,7 +46,7 @@ class LLMProviderService(
   private val claudeApiService: ClaudeApiService,
   private val geminiApiService: GeminiApiService,
   private val restTemplateBuilder: RestTemplateBuilder,
-  private val internalProperties: InternalProperties
+  private val internalProperties: InternalProperties,
 ) {
   private val cache: Cache by lazy { cacheManager.getCache(Caches.LLM_PROVIDERS) }
   private var lastUsedMap: MutableMap<String, Long> = mutableMapOf()
@@ -158,13 +158,18 @@ class LLMProviderService(
     }
   }
 
-  fun getFakedResponse(params: LLMParams, config: LLMProviderInterface, restTemplate: RestTemplate): PromptService.Companion.PromptResult {
-    val json = """
+  fun getFakedResponse(
+    params: LLMParams,
+    config: LLMProviderInterface,
+    restTemplate: RestTemplate,
+  ): PromptService.Companion.PromptResult {
+    val json =
+      """
       {
         "output": "${config.name} response",
         "contextDescription": "${config.name} contextDescription",
       }
-    """.trimIndent()
+      """.trimIndent()
     return PromptService.Companion.PromptResult(
       response = json,
       usage = PromptResponseUsageDto(inputTokens = 42, outputTokens = 42, cachedTokens = 21),

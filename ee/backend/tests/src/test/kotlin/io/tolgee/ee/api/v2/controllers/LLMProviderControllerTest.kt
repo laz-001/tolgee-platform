@@ -17,11 +17,12 @@ class LLMProviderControllerTest : AuthorizedControllerTest() {
     testData = PromptTestData()
     testDataService.saveTestData(testData.root)
     llmProperties.enabled = true
-    llmProperties.providers = mutableListOf(
-      LLMProperties.LLMProvider(
-        type = LLMProviderType.OPENAI,
+    llmProperties.providers =
+      mutableListOf(
+        LLMProperties.LLMProvider(
+          type = LLMProviderType.OPENAI,
+        ),
       )
-    )
     this.userAccount = testData.organizationOwner.self
   }
 
@@ -70,7 +71,7 @@ class LLMProviderControllerTest : AuthorizedControllerTest() {
   fun `adds llm provider`() {
     performAuthPost(
       "/v2/organizations/${testData.organization.self.id}/llm-providers",
-      LLMProviderRequest(name = "custom-provider", type = LLMProviderType.OPENAI, apiUrl = "mock")
+      LLMProviderRequest(name = "custom-provider", type = LLMProviderType.OPENAI, apiUrl = "mock"),
     ).andIsOk
   }
 
@@ -79,7 +80,7 @@ class LLMProviderControllerTest : AuthorizedControllerTest() {
     this.userAccount = testData.organizationMember.self
     performAuthPost(
       "/v2/organizations/${testData.organization.self.id}/llm-providers",
-      LLMProviderRequest(name = "custom-provider", type = LLMProviderType.OPENAI, apiUrl = "mock")
+      LLMProviderRequest(name = "custom-provider", type = LLMProviderType.OPENAI, apiUrl = "mock"),
     ).andIsForbidden.andAssertThatJson {
       node("code").isEqualTo("operation_not_permitted")
     }
@@ -104,7 +105,7 @@ class LLMProviderControllerTest : AuthorizedControllerTest() {
   fun `updates llm provider`() {
     performAuthPut(
       "/v2/organizations/${testData.organization.self.id}/llm-providers/${testData.llmProvider.self.id}",
-      LLMProviderRequest(name = "updated-provider", type = LLMProviderType.OLLAMA, apiUrl = "different-url")
+      LLMProviderRequest(name = "updated-provider", type = LLMProviderType.OLLAMA, apiUrl = "different-url"),
     ).andIsOk.andAssertThatJson {
       node("name").isEqualTo("updated-provider")
       node("type").isEqualTo("OLLAMA")
@@ -117,7 +118,7 @@ class LLMProviderControllerTest : AuthorizedControllerTest() {
     this.userAccount = testData.organizationMember.self
     performAuthPut(
       "/v2/organizations/${testData.organization.self.id}/llm-providers/${testData.llmProvider.self.id}",
-      LLMProviderRequest(name = "updated-provider", type = LLMProviderType.OLLAMA, apiUrl = "different-url")
+      LLMProviderRequest(name = "updated-provider", type = LLMProviderType.OLLAMA, apiUrl = "different-url"),
     ).andIsForbidden
   }
 }

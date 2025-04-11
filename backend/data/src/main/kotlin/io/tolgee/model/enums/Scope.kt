@@ -114,7 +114,7 @@ enum class Scope(
           HierarchyItem(BATCH_MACHINE_TRANSLATE, listOf(translationsEdit)),
           HierarchyItem(CONTENT_DELIVERY_MANAGE, listOf(HierarchyItem(CONTENT_DELIVERY_PUBLISH))),
           HierarchyItem(WEBHOOKS_MANAGE),
-          ),
+        ),
       )
 
     private fun expand(item: HierarchyItem): MutableSet<Scope> {
