@@ -10,7 +10,11 @@ import {
   Typography,
 } from '@mui/material';
 import { ChevronDown, ChevronUp, Send03 } from '@untitled-ui/icons-react';
-import { useApiMutation, useApiQuery } from 'tg.service/http/useQueryApi';
+import {
+  invalidateUrlPrefix,
+  useApiMutation,
+  useApiQuery,
+} from 'tg.service/http/useQueryApi';
 import { EditorHandlebars } from 'tg.component/editor/EditorHandlebars';
 import { EditorWrapper } from 'tg.component/editor/EditorWrapper';
 import { stopBubble } from 'tg.fixtures/eventHandler';
@@ -27,6 +31,7 @@ import { PanelContentProps } from 'tg.views/projects/translations/ToolsPanel/com
 import { useTranslationsActions } from 'tg.views/projects/translations/context/TranslationsContext';
 import { BatchJobModel } from 'tg.views/projects/translations/BatchOperations/types';
 import { BatchOperationDialog } from 'tg.views/projects/translations/BatchOperations/OperationsSummary/BatchOperationDialog';
+import { useQueryClient } from 'react-query';
 
 const StyledTextField = styled(TextField)`
   flex-grow: 1;
@@ -42,6 +47,7 @@ const StyledTextField = styled(TextField)`
 export const AiPrompt: React.FC<PanelContentProps> = (props) => {
   const { getAllIds, setEdit, refetchTranslations } = useTranslationsActions();
   const [runningOperation, setRunningOperation] = useState<BatchJobModel>();
+  const queryClient = useQueryClient();
   const [value, setValue] = useLocalStorageState<string>({
     key: 'aiPlaygroundLastValue',
     initial: 'Hi translate from {{source}} to {{target}}',
@@ -59,6 +65,7 @@ export const AiPrompt: React.FC<PanelContentProps> = (props) => {
   const promptLoadable = useApiMutation({
     url: '/v2/projects/{projectId}/prompts/run',
     method: 'post',
+    invalidatePrefix: '/v2/projects/{projectId}/ai-playground-result',
   });
 
   useEffect(() => {
@@ -74,7 +81,7 @@ export const AiPrompt: React.FC<PanelContentProps> = (props) => {
   });
 
   const mtTranslate = useApiMutation({
-    url: '/v2/projects/{projectId}/start-batch-job/machine-translate',
+    url: '/v2/projects/{projectId}/start-batch-job/ai-playground-translate',
     method: 'post',
   });
 
@@ -259,7 +266,7 @@ export const AiPrompt: React.FC<PanelContentProps> = (props) => {
           {usage?.inputTokens && (
             <>
               {`tokens: ${usage.inputTokens + (usage.outputTokens ?? 0)}`}
-              {`, mtcredits: ${promptLoadable.data!.price! / 100}`}
+              {`, credits: ${promptLoadable.data!.price! / 100}`}
               {typeof usage.cachedTokens === 'number' &&
                 `, cached: ${usage.cachedTokens}`}
             </>
@@ -301,6 +308,7 @@ export const AiPrompt: React.FC<PanelContentProps> = (props) => {
           onFinished={() => {
             refetchTranslations();
             setRunningOperation(undefined);
+            invalidateUrlPrefix(queryClient, '');
           }}
         />
       )}

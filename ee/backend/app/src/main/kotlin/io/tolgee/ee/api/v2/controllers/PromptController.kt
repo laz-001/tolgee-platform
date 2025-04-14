@@ -14,7 +14,9 @@ import io.tolgee.model.enums.LLMProviderPriority
 import io.tolgee.model.enums.Scope
 import io.tolgee.openApiDocs.OpenApiOrderExtension
 import io.tolgee.security.ProjectHolder
+import io.tolgee.security.authentication.AuthenticationFacade
 import io.tolgee.security.authorization.RequiresProjectPermissions
+import io.tolgee.service.AiPlaygroundResultService
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -37,6 +39,8 @@ class PromptController(
   private val arrayResourcesAssembler: PagedResourcesAssembler<Prompt>,
   private val projectHolder: ProjectHolder,
   private val promptVariablesService: PromptVariablesService,
+  private val aiPlaygroundResultService: AiPlaygroundResultService,
+  private val authenticationFacade: AuthenticationFacade,
 ) {
   @GetMapping("")
   @RequiresProjectPermissions([Scope.PROMPTS_VIEW])
@@ -55,7 +59,7 @@ class PromptController(
   }
 
   @PostMapping("")
-  @RequiresProjectPermissions([io.tolgee.model.enums.Scope.PROMPTS_EDIT])
+  @RequiresProjectPermissions([Scope.PROMPTS_EDIT])
   fun createPrompt(
     @RequestBody @Valid dto: PromptDto,
   ): PromptModel {
@@ -64,7 +68,7 @@ class PromptController(
   }
 
   @PutMapping("/{promptId}")
-  @RequiresProjectPermissions([io.tolgee.model.enums.Scope.PROMPTS_EDIT])
+  @RequiresProjectPermissions([Scope.PROMPTS_EDIT])
   fun updatePrompt(
     @PathVariable promptId: Long,
     @RequestBody @Valid dto: PromptDto,
@@ -74,7 +78,7 @@ class PromptController(
   }
 
   @DeleteMapping("/{promptId}")
-  @RequiresProjectPermissions([io.tolgee.model.enums.Scope.PROMPTS_EDIT])
+  @RequiresProjectPermissions([Scope.PROMPTS_EDIT])
   fun deletePrompt(
     @PathVariable promptId: Long,
   ) {
@@ -82,11 +86,13 @@ class PromptController(
   }
 
   @PostMapping("run")
-  @RequiresProjectPermissions([io.tolgee.model.enums.Scope.PROMPTS_EDIT])
+  @RequiresProjectPermissions([Scope.PROMPTS_EDIT])
   fun run(
     @Valid @RequestBody promptRunDto: PromptRunDto,
   ): PromptResponseDto {
-    val prompt = promptService.getPrompt(projectHolder.project.id, promptRunDto)
+    val projectId = projectHolder.project.id
+    val userId = authenticationFacade.authenticatedUser.id
+    val prompt = promptService.getPrompt(projectId, promptRunDto)
     val params = promptService.getLLMParamsFromPrompt(prompt, promptRunDto.keyId)
     val organizationId = projectHolder.project.organizationOwnerId
     val response =
@@ -96,6 +102,22 @@ class PromptController(
         promptRunDto.provider,
         LLMProviderPriority.HIGH,
       )
+    val translation = response.parsedJson?.get("output")?.asText()
+    if (translation != null) {
+      val contextDescription = response.parsedJson?.get("contextDescription")?.asText()
+      aiPlaygroundResultService.removeResults(
+        projectHolder.project.id,
+        userId
+      )
+      aiPlaygroundResultService.setResult(
+        projectHolder.project.id,
+        userId,
+        promptRunDto.keyId,
+        promptRunDto.targetLanguageId,
+        translation,
+        contextDescription
+      )
+    }
     return PromptResponseDto(
       prompt,
       response.response,
@@ -107,7 +129,7 @@ class PromptController(
 
   @GetMapping("get-variables")
   @Operation(summary = "Get variables")
-  @RequiresProjectPermissions([io.tolgee.model.enums.Scope.PROMPTS_EDIT])
+  @RequiresProjectPermissions([Scope.PROMPTS_EDIT])
   fun variables(
     @RequestParam keyId: Long?,
     @RequestParam targetLanguageId: Long?,

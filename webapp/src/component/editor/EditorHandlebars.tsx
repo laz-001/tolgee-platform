@@ -194,7 +194,7 @@ export const EditorHandlebars: React.FC<EditorProps> = ({
       });
       editor.current?.update([transaction]);
     }
-  }, [value]);
+  }, [editor.current, value]);
 
   useEffect(() => {
     // set cursor to the end of document
@@ -217,6 +217,7 @@ export const EditorHandlebars: React.FC<EditorProps> = ({
     <StyledEditor
       data-cy="handlebars-editor"
       ref={ref}
+      key={theme.palette.mode}
       dir={direction}
       style={{
         minHeight,

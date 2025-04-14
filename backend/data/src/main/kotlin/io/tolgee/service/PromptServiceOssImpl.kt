@@ -1,5 +1,6 @@
 package io.tolgee.service
 
+import io.tolgee.component.machineTranslation.MtValueProvider
 import io.tolgee.dtos.request.prompt.PromptDto
 import io.tolgee.dtos.request.prompt.PromptRunDto
 import io.tolgee.model.Prompt
@@ -13,6 +14,14 @@ class PromptServiceOssImpl : PromptService {
     data: PromptRunDto,
     priority: LLMProviderPriority?,
   ) {
+    throw UnsupportedOperationException("Not included in OSS")
+  }
+
+  override fun translate(
+    projectId: Long,
+    data: PromptRunDto,
+    priority: LLMProviderPriority?
+  ): MtValueProvider.MtResult {
     throw UnsupportedOperationException("Not included in OSS")
   }
 

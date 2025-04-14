@@ -1,6 +1,7 @@
 package io.tolgee.service
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.tolgee.component.machineTranslation.MtValueProvider
 import io.tolgee.dtos.request.prompt.PromptDto
 import io.tolgee.dtos.request.prompt.PromptRunDto
 import io.tolgee.dtos.response.prompt.PromptResponseUsageDto
@@ -13,6 +14,12 @@ interface PromptService {
     data: PromptRunDto,
     priority: LLMProviderPriority?,
   )
+
+  fun translate(
+    projectId: Long,
+    data: PromptRunDto,
+    priority: LLMProviderPriority?,
+  ) : MtValueProvider.MtResult
 
   fun findPromptOrDefaultDto(
     projectId: Long,

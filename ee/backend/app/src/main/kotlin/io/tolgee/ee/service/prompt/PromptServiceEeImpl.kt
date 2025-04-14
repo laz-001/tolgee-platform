@@ -280,7 +280,7 @@ class PromptServiceEeImpl(
   }
 
   @Transactional
-  fun translateViaPrompt(
+  override fun translate(
     projectId: Long,
     data: PromptRunDto,
     priority: LLMProviderPriority?,
@@ -297,7 +297,7 @@ class PromptServiceEeImpl(
     data: PromptRunDto,
     priority: LLMProviderPriority?,
   ) {
-    val result = translateViaPrompt(projectId, data, priority)
+    val result = translate(projectId, data, priority)
     val translation = translationService.getOrCreate(data.keyId, data.targetLanguageId)
     translation.text = result.translated
     translationService.save(translation)

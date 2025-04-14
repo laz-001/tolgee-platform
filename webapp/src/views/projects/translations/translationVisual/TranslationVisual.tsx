@@ -44,6 +44,10 @@ export const TranslationVisual = ({
     );
   }
 
+  if (!text) {
+    return null;
+  }
+
   return (
     <TranslationPlurals
       value={value}

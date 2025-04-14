@@ -31,7 +31,7 @@ class GenericAutoTranslationChunkProcessor(
   private val languageService: LanguageService,
   private val promptService: PromptService,
 ) {
-  fun process(
+  open fun process(
     job: BatchJobDto,
     chunk: List<BatchTranslationTargetItem>,
     coroutineContext: CoroutineContext,

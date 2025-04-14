@@ -312,6 +312,9 @@ export interface paths {
   "/v2/projects/{projectId}/activity/revisions/{revisionId}/modified-entities": {
     get: operations["getModifiedEntitiesByRevision"];
   };
+  "/v2/projects/{projectId}/ai-playground-result": {
+    post: operations["getAiPlaygroundResult"];
+  };
   "/v2/projects/{projectId}/ai-prompt-customization": {
     get: operations["getPromptProjectCustomization"];
     put: operations["setPromptProjectCustomization"];
@@ -612,6 +615,9 @@ export interface paths {
   "/v2/projects/{projectId}/single-step-import": {
     /** Unlike the /v2/projects/{projectId}/import endpoint, imports the data in single request by provided files and parameters. This is useful for automated importing via API or CLI. */
     post: operations["doImport"];
+  };
+  "/v2/projects/{projectId}/start-batch-job/ai-playground-translate": {
+    post: operations["aiPlaygroundTranslate"];
   };
   "/v2/projects/{projectId}/start-batch-job/clear-translations": {
     /** Clear translation values for provided keys in selected languages. */
@@ -952,6 +958,14 @@ export interface components {
     AcceptAuthProviderChangeRequest: {
       id: string;
     };
+    AiPlaygroundResultModel: {
+      contextDescription?: string;
+      /** Format: int64 */
+      keyId: number;
+      /** Format: int64 */
+      languageId: number;
+      translation?: string;
+    };
     AnnouncementDto: {
       type:
         | "FEATURE_BATCH_OPERATIONS"
@@ -1174,6 +1188,7 @@ export interface components {
       totalItems: number;
       /** @description Type of the batch job */
       type:
+        | "AI_PLAYGROUND_TRANSLATE"
         | "PRE_TRANSLATE_BT_TM"
         | "MACHINE_TRANSLATE"
         | "AUTO_TRANSLATE"
@@ -3158,6 +3173,9 @@ export interface components {
       id: number;
       /** @example homepage */
       name: string;
+    };
+    NonPagedModelAiPlaygroundResultModel: {
+      items: components["schemas"]["AiPlaygroundResultModel"][];
     };
     NonPagedModelLLMProviderModel: {
       items: components["schemas"]["LLMProviderModel"][];
@@ -9950,6 +9968,57 @@ export interface operations {
       };
     };
   };
+  getAiPlaygroundResult: {
+    parameters: {
+      query: {
+        keys: number[];
+        languages: number[];
+      };
+      path: {
+        projectId: number;
+      };
+    };
+    responses: {
+      /** OK */
+      200: {
+        content: {
+          "application/json": components["schemas"]["NonPagedModelAiPlaygroundResultModel"];
+        };
+      };
+      /** Bad Request */
+      400: {
+        content: {
+          "application/json":
+            | components["schemas"]["ErrorResponseTyped"]
+            | components["schemas"]["ErrorResponseBody"];
+        };
+      };
+      /** Unauthorized */
+      401: {
+        content: {
+          "application/json":
+            | components["schemas"]["ErrorResponseTyped"]
+            | components["schemas"]["ErrorResponseBody"];
+        };
+      };
+      /** Forbidden */
+      403: {
+        content: {
+          "application/json":
+            | components["schemas"]["ErrorResponseTyped"]
+            | components["schemas"]["ErrorResponseBody"];
+        };
+      };
+      /** Not Found */
+      404: {
+        content: {
+          "application/json":
+            | components["schemas"]["ErrorResponseTyped"]
+            | components["schemas"]["ErrorResponseBody"];
+        };
+      };
+    };
+  };
   getPromptProjectCustomization: {
     parameters: {
       path: {
@@ -15078,6 +15147,58 @@ export interface operations {
           files: string[];
           params: components["schemas"]["SingleStepImportRequest"];
         };
+      };
+    };
+  };
+  aiPlaygroundTranslate: {
+    parameters: {
+      path: {
+        projectId: number;
+      };
+    };
+    responses: {
+      /** OK */
+      200: {
+        content: {
+          "application/json": components["schemas"]["BatchJobModel"];
+        };
+      };
+      /** Bad Request */
+      400: {
+        content: {
+          "application/json":
+            | components["schemas"]["ErrorResponseTyped"]
+            | components["schemas"]["ErrorResponseBody"];
+        };
+      };
+      /** Unauthorized */
+      401: {
+        content: {
+          "application/json":
+            | components["schemas"]["ErrorResponseTyped"]
+            | components["schemas"]["ErrorResponseBody"];
+        };
+      };
+      /** Forbidden */
+      403: {
+        content: {
+          "application/json":
+            | components["schemas"]["ErrorResponseTyped"]
+            | components["schemas"]["ErrorResponseBody"];
+        };
+      };
+      /** Not Found */
+      404: {
+        content: {
+          "application/json":
+            | components["schemas"]["ErrorResponseTyped"]
+            | components["schemas"]["ErrorResponseBody"];
+        };
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["MachineTranslationRequest"];
       };
     };
   };
