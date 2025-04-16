@@ -107,7 +107,7 @@ class PromptController(
       val contextDescription = response.parsedJson?.get("contextDescription")?.asText()
       aiPlaygroundResultService.removeResults(
         projectHolder.project.id,
-        userId
+        userId,
       )
       aiPlaygroundResultService.setResult(
         projectHolder.project.id,
@@ -115,7 +115,7 @@ class PromptController(
         promptRunDto.keyId,
         promptRunDto.targetLanguageId,
         translation,
-        contextDescription
+        contextDescription,
       )
     }
     return PromptResponseDto(

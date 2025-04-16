@@ -51,5 +51,44 @@ interface AiPlaygroundResultRepository : JpaRepository<AiPlaygroundResult, Long>
       and r.user.id = :userId
     """,
   )
-  fun removeResults(projectId: Long, userId: Long)
+  fun removeResults(
+    projectId: Long,
+    userId: Long,
+  )
+
+  @Modifying
+  @Query(
+    """
+    delete from AiPlaygroundResult r
+    where r.language.id = :languageId
+    """,
+  )
+  fun deleteAiPlaygroundResultsByLanguage(languageId: Long)
+
+  @Modifying
+  @Query(
+    """
+    delete from AiPlaygroundResult r
+    where r.project.id = :projectId
+    """,
+  )
+  fun deleteAiPlaygroundResultsByProject(projectId: Long)
+
+  @Modifying
+  @Query(
+    """
+    delete from AiPlaygroundResult r
+    where r.user.id = :userId
+    """,
+  )
+  fun deleteAiPlaygroundResultsByUser(userId: Long)
+
+  @Modifying
+  @Query(
+    """
+    delete from AiPlaygroundResult r
+    where r.key.id in :keys
+    """,
+  )
+  fun deleteAiPlaygroundResultsByKeys(keys: Collection<Long>)
 }

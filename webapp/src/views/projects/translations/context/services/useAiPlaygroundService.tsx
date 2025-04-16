@@ -44,9 +44,13 @@ export const useAiPlaygroundService = ({
       path: {
         projectId,
       },
+      content: {
+        'application/json': {
+          keys: keys,
+          languages: languageIds,
+        },
+      },
       query: {
-        keys,
-        languages: languageIds ?? [],
         hash,
       },
       options: {

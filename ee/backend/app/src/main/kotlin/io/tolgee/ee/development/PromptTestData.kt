@@ -2,12 +2,14 @@ package io.tolgee.ee.development
 
 import io.tolgee.development.testDataBuilder.builders.*
 import io.tolgee.development.testDataBuilder.data.BaseTestData
+import io.tolgee.model.UserAccount
 import io.tolgee.model.enums.OrganizationRoleType
 import io.tolgee.model.enums.ProjectPermissionType
 
 class PromptTestData : BaseTestData() {
   val organization: OrganizationBuilder
   val unrelatedOrganization: OrganizationBuilder
+  val serverAdmin: UserAccountBuilder
   val organizationMember: UserAccountBuilder
   val organizationOwner: UserAccountBuilder
   val promptProject: ProjectBuilder
@@ -20,6 +22,14 @@ class PromptTestData : BaseTestData() {
   lateinit var llmProvider: LLMProviderBuilder
 
   init {
+
+    serverAdmin =
+      root.addUserAccount {
+        username = "admin@admin.com"
+        name = "Peter Administrator"
+        role = UserAccount.Role.ADMIN
+      }
+
     organizationMember =
       root.addUserAccount {
         username = "member@organization.com"
@@ -88,6 +98,13 @@ class PromptTestData : BaseTestData() {
               }
             }
           }.toMutableList()
+
+        addAiPlaygroundResult {
+          this.user = organizationMember.self
+          this.language = czech.self
+          this.project = this@build.self
+          this.key = keys.get(0).self
+        }
 
         addPermission {
           user = projectEditor.self

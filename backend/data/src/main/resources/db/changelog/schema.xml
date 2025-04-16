@@ -4375,4 +4375,24 @@
     <changeSet author="stepangranat (generated)" id="1744619951914-5">
         <addForeignKeyConstraint baseColumnNames="key_id" baseTableName="ai_playground_result" constraintName="FKjkuq1qx92i73y5nvme2uqpthh" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="key" validate="true"/>
     </changeSet>
+    <changeSet author="stepangranat (generated)" id="1744790445901-1">
+        <createIndex indexName="IDX3y1p4ky4k250lblg5xsmih5mj" tableName="ai_playground_result">
+            <column name="language_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="stepangranat (generated)" id="1744790445901-2">
+        <createIndex indexName="IDXhciyhicmo3qk5l69svo61nx9u" tableName="ai_playground_result">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="stepangranat (generated)" id="1744790445901-3">
+        <createIndex indexName="IDXo90fm1uhwbgyv6yrluuu33ony" tableName="ai_playground_result">
+            <column name="key_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="stepangranat (generated)" id="1744790445901-4">
+        <createIndex indexName="IDXqoau1fyjfw3cpp8w3ag3q5vxv" tableName="ai_playground_result">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

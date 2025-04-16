@@ -29,7 +29,7 @@ class AiPlaygroundChunkProcessor(
   private val promptService: PromptService,
   private val mtServiceConfigService: MtServiceConfigService,
   private val currentDateProvider: CurrentDateProvider,
-  private val aiPlaygroundResultService: AiPlaygroundResultService
+  private val aiPlaygroundResultService: AiPlaygroundResultService,
 ) : ChunkProcessor<MachineTranslationRequest, MachineTranslationJobParams, BatchTranslationTargetItem> {
   override fun process(
     job: BatchJobDto,
@@ -44,16 +44,17 @@ class AiPlaygroundChunkProcessor(
       val key = keys[keyId] ?: return@iterateCatching
       val llmPrompt = getParams(job).llmPrompt ?: throw Error("LlmPrompt required")
 
-      val result = promptService.translate(
-        job.projectId!!,
-        PromptRunDto(
-          template = llmPrompt.template,
-          keyId = key.id,
-          targetLanguageId = languageId,
-          provider = llmPrompt.providerName,
-        ),
-        priority = LLMProviderPriority.LOW,
-      )
+      val result =
+        promptService.translate(
+          job.projectId!!,
+          PromptRunDto(
+            template = llmPrompt.template,
+            keyId = key.id,
+            targetLanguageId = languageId,
+            provider = llmPrompt.providerName,
+          ),
+          priority = LLMProviderPriority.LOW,
+        )
 
       aiPlaygroundResultService.setResult(
         projectId = job.projectId!!,

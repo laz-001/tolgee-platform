@@ -19,7 +19,7 @@ interface PromptService {
     projectId: Long,
     data: PromptRunDto,
     priority: LLMProviderPriority?,
-  ) : MtValueProvider.MtResult
+  ): MtValueProvider.MtResult
 
   fun findPromptOrDefaultDto(
     projectId: Long,

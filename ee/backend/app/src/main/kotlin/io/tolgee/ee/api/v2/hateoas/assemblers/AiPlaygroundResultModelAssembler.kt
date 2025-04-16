@@ -7,14 +7,15 @@ import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSuppor
 import org.springframework.stereotype.Component
 
 @Component
-class AiPlaygroundResultModelAssembler : RepresentationModelAssemblerSupport<AiPlaygroundResult, AiPlaygroundResultModel>(
-  AiPlaygroundResultController::class.java,
-  AiPlaygroundResultModel::class.java,
-) {
+class AiPlaygroundResultModelAssembler :
+  RepresentationModelAssemblerSupport<AiPlaygroundResult, AiPlaygroundResultModel>(
+    AiPlaygroundResultController::class.java,
+    AiPlaygroundResultModel::class.java,
+  ) {
   override fun toModel(entity: AiPlaygroundResult): AiPlaygroundResultModel {
     return AiPlaygroundResultModel(
-      keyId = entity.key.id,
-      languageId = entity.language.id,
+      keyId = entity.key!!.id,
+      languageId = entity.language!!.id,
       translation = entity.translation,
       contextDescription = entity.contextDescription,
     )

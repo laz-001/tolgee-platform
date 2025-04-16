@@ -20,7 +20,7 @@ class PromptServiceOssImpl : PromptService {
   override fun translate(
     projectId: Long,
     data: PromptRunDto,
-    priority: LLMProviderPriority?
+    priority: LLMProviderPriority?,
   ): MtValueProvider.MtResult {
     throw UnsupportedOperationException("Not included in OSS")
   }

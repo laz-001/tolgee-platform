@@ -966,6 +966,10 @@ export interface components {
       languageId: number;
       translation?: string;
     };
+    AiPlaygroundResultRequest: {
+      keys: number[];
+      languages: number[];
+    };
     AnnouncementDto: {
       type:
         | "FEATURE_BATCH_OPERATIONS"
@@ -9970,10 +9974,6 @@ export interface operations {
   };
   getAiPlaygroundResult: {
     parameters: {
-      query: {
-        keys: number[];
-        languages: number[];
-      };
       path: {
         projectId: number;
       };
@@ -10016,6 +10016,11 @@ export interface operations {
             | components["schemas"]["ErrorResponseTyped"]
             | components["schemas"]["ErrorResponseBody"];
         };
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AiPlaygroundResultRequest"];
       };
     };
   };
