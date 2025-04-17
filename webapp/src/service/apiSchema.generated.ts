@@ -609,6 +609,7 @@ export interface paths {
     post: operations["run"];
   };
   "/v2/projects/{projectId}/prompts/{promptId}": {
+    get: operations["getPrompt"];
     put: operations["updatePrompt"];
     delete: operations["deletePrompt"];
   };
@@ -15003,6 +15004,54 @@ export interface operations {
     requestBody: {
       content: {
         "application/json": components["schemas"]["PromptRunDto"];
+      };
+    };
+  };
+  getPrompt: {
+    parameters: {
+      path: {
+        promptId: number;
+        projectId: number;
+      };
+    };
+    responses: {
+      /** OK */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PromptModel"];
+        };
+      };
+      /** Bad Request */
+      400: {
+        content: {
+          "application/json":
+            | components["schemas"]["ErrorResponseTyped"]
+            | components["schemas"]["ErrorResponseBody"];
+        };
+      };
+      /** Unauthorized */
+      401: {
+        content: {
+          "application/json":
+            | components["schemas"]["ErrorResponseTyped"]
+            | components["schemas"]["ErrorResponseBody"];
+        };
+      };
+      /** Forbidden */
+      403: {
+        content: {
+          "application/json":
+            | components["schemas"]["ErrorResponseTyped"]
+            | components["schemas"]["ErrorResponseBody"];
+        };
+      };
+      /** Not Found */
+      404: {
+        content: {
+          "application/json":
+            | components["schemas"]["ErrorResponseTyped"]
+            | components["schemas"]["ErrorResponseBody"];
+        };
       };
     };
   };

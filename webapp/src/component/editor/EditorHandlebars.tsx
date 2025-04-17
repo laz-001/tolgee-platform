@@ -17,6 +17,7 @@ import {
   errorPlugin,
   setErrorsEffect,
 } from './utils/codemirrorError';
+import { useTranslate } from '@tolgee/react';
 
 type PromptVariable = components['schemas']['PromptVariableDto'];
 
@@ -56,13 +57,40 @@ const StyledEditor = styled('div')`
     border: none;
     color: ${({ theme }) => theme.palette.tooltip.text};
     background-color: ${({ theme }) => theme.palette.tooltip.background};
-    padding: 4px 8px;
+    padding: 10px 14px;
     margin-top: 4px;
     max-width: 100%;
     display: block;
     unicode-bidi: embed;
     white-space: pre-wrap;
   }
+
+  & .cm-tooltip .header {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  & .cm-tooltip .title {
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  & .cm-tooltip .action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    gap: 4px;
+    color: ${({ theme }) => theme.palette.primary.main};
+    font-size: 13px;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid
+      ${({ theme }) => theme.palette.tokens.primary._states.outlinedBorder};
+  }
+
   .cm-error-underline {
     text-decoration: underline wavy red;
     text-underline-offset: 4px;
@@ -120,6 +148,7 @@ export const EditorHandlebars: React.FC<EditorProps> = ({
     onFocus,
     onBlur,
   });
+  const { t } = useTranslate();
 
   keyBindings.current = shortcuts;
   variableRefs.current = availableVariables;
@@ -166,7 +195,7 @@ export const EditorHandlebars: React.FC<EditorProps> = ({
             activateOnTyping: true,
           }),
           errorPlugin(),
-          handlebarsTooltip(variableRefs, unknownVariableMessageRef),
+          handlebarsTooltip(variableRefs, unknownVariableMessageRef, t),
           direction === 'rtl' ? htmlIsolatesPlugin : [],
         ],
       }),
@@ -214,15 +243,17 @@ export const EditorHandlebars: React.FC<EditorProps> = ({
   });
 
   return (
-    <StyledEditor
-      data-cy="handlebars-editor"
-      ref={ref}
-      key={theme.palette.mode}
-      dir={direction}
-      style={{
-        minHeight,
-        direction,
-      }}
-    />
+    <>
+      <StyledEditor
+        data-cy="handlebars-editor"
+        ref={ref}
+        key={theme.palette.mode}
+        dir={direction}
+        style={{
+          minHeight,
+          direction,
+        }}
+      />
+    </>
   );
 };

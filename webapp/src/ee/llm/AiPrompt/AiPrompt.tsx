@@ -4,12 +4,15 @@ import {
   Button,
   IconButton,
   MenuItem,
+  Portal,
   Select,
   styled,
   TextField,
   Typography,
 } from '@mui/material';
+import { useQueryClient } from 'react-query';
 import { ChevronDown, ChevronUp, Send03 } from '@untitled-ui/icons-react';
+
 import {
   invalidateUrlPrefix,
   useApiMutation,
@@ -27,11 +30,28 @@ import { AiResult } from './AiResult';
 import { PromptLoadMenu } from './PromptLoadMenu';
 import { PromptSaveMenu } from './PromptSaveMenu';
 import { EditorError } from 'tg.component/editor/utils/codemirrorError';
-import { PanelContentProps } from 'tg.views/projects/translations/ToolsPanel/common/types';
 import { useTranslationsActions } from 'tg.views/projects/translations/context/TranslationsContext';
 import { BatchJobModel } from 'tg.views/projects/translations/BatchOperations/types';
 import { BatchOperationDialog } from 'tg.views/projects/translations/BatchOperations/OperationsSummary/BatchOperationDialog';
-import { useQueryClient } from 'react-query';
+import { useUrlSearchState } from 'tg.hooks/useUrlSearchState';
+import { useTranslate } from '@tolgee/react';
+import { components } from 'tg.service/apiSchema.generated';
+import { DeletableKeyWithTranslationsModelType } from 'tg.views/projects/translations/context/types';
+
+type ProjectModel = components['schemas']['ProjectModel'];
+type LanguageModel = components['schemas']['LanguageModel'];
+
+const StyledActionsWrapper = styled('div')`
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: end;
+  position: fixed;
+  bottom: 0px;
+  background: ${({ theme }) => theme.palette.background.default};
+  z-index: ${({ theme }) => theme.zIndex.appBar};
+`;
 
 const StyledTextField = styled(TextField)`
   flex-grow: 1;
@@ -44,12 +64,36 @@ const StyledTextField = styled(TextField)`
   }
 `;
 
-export const AiPrompt: React.FC<PanelContentProps> = (props) => {
+const StyledHeader = styled('div')`
+  display: grid;
+  margin: 20px;
+  gap: 16px;
+`;
+
+const StyledTitle = styled('div')`
+  font-size: 20px;
+  font-weight: 400;
+`;
+
+type Props = {
+  width: number;
+  project: ProjectModel;
+  language: LanguageModel;
+  keyData: DeletableKeyWithTranslationsModelType;
+};
+
+export const AiPrompt: React.FC<Props> = (props) => {
+  const projectId = props.project.id;
+  const { t } = useTranslate();
   const { getAllIds, setEdit, refetchTranslations } = useTranslationsActions();
+  const [lastOpenPrompt, setLastOpenPrompt] = useUrlSearchState(
+    `aiPlaygroundLastPrompt-${projectId}`,
+    { defaultVal: undefined }
+  );
   const [runningOperation, setRunningOperation] = useState<BatchJobModel>();
   const queryClient = useQueryClient();
   const [value, setValue] = useLocalStorageState<string>({
-    key: 'aiPlaygroundLastValue',
+    key: `aiPlaygroundLastValue-${projectId}`,
     initial: 'Hi translate from {{source}} to {{target}}',
   });
   const [expanded, setExpanded] = useLocalStorageState({
@@ -57,7 +101,7 @@ export const AiPrompt: React.FC<PanelContentProps> = (props) => {
     initial: undefined,
   });
   const [provider, setProvider] = useLocalStorageState<string>({
-    key: 'aiPlaygroundProvider',
+    key: `aiPlaygroundProvider-${projectId}`,
     initial: 'default',
   });
   const [errors, setErrors] = useState<EditorError[]>();
@@ -71,6 +115,18 @@ export const AiPrompt: React.FC<PanelContentProps> = (props) => {
   useEffect(() => {
     setErrors(undefined);
   }, [value]);
+
+  const lastPrompt = useApiQuery({
+    url: '/v2/projects/{projectId}/prompts/{promptId}',
+    method: 'get',
+    path: {
+      projectId,
+      promptId: Number(lastOpenPrompt)!,
+    },
+    options: {
+      enabled: Boolean(lastOpenPrompt),
+    },
+  });
 
   const providersLoadable = useApiQuery({
     url: '/v2/organizations/{organizationId}/llm-providers/all-available',
@@ -116,6 +172,9 @@ export const AiPrompt: React.FC<PanelContentProps> = (props) => {
   };
 
   const cellSelected = Boolean(props.keyData && props.language);
+
+  const lastPromptName =
+    lastPrompt.data?.name ?? t('ai_prompt_default_prompt_name');
 
   const promptVariables = useApiQuery({
     url: '/v2/projects/{projectId}/prompts/get-variables',
@@ -168,43 +227,21 @@ export const AiPrompt: React.FC<PanelContentProps> = (props) => {
 
   return (
     <Box display="grid">
-      <Box
-        sx={{
-          margin: 1,
-          display: 'flex',
-          gap: 1,
-          justifyContent: 'space-between',
-          alignItems: 'end',
-        }}
-      >
-        <Box>
-          <FieldLabel>Provider</FieldLabel>
-          <Select
-            size="small"
-            value={provider}
-            onChange={(e) => setProvider(e.target.value)}
-          >
-            {providersLoadable.data?.items.map((i) => (
-              <MenuItem key={i.name} value={i.name}>
-                {i.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </Box>
-        <Box display="flex" gap={1}>
-          <PromptLoadMenu
-            projectId={props.project.id}
-            onSelect={(item) => {
-              setProvider(item.providerName);
-              setValue(item.template);
-            }}
-          />
-          <PromptSaveMenu
-            projectId={props.project.id}
-            data={{ template: value, providerName: provider }}
-          />
-        </Box>
-      </Box>
+      <StyledHeader>
+        <StyledTitle>{lastPromptName}</StyledTitle>
+
+        <Select
+          size="small"
+          value={provider}
+          onChange={(e) => setProvider(e.target.value)}
+        >
+          {providersLoadable.data?.items.map((i) => (
+            <MenuItem key={i.name} value={i.name}>
+              {i.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </StyledHeader>
       <Box sx={{ margin: '8px' }}>
         <FieldLabel>Prompt</FieldLabel>
         <EditorWrapper onKeyDown={stopBubble()}>
@@ -301,6 +338,28 @@ export const AiPrompt: React.FC<PanelContentProps> = (props) => {
           {expanded ? <ChevronUp /> : <ChevronDown />}
         </IconButton>
       </Box>
+
+      <Portal>
+        <StyledActionsWrapper style={{ width: props.width, right: 22 }}>
+          <Box display="flex" gap={1}>
+            <PromptLoadMenu
+              projectId={props.project.id}
+              onSelect={(item) => {
+                setLastOpenPrompt(
+                  item.id !== undefined ? String(item.id) : undefined
+                );
+                setProvider(item.providerName);
+                setValue(item.template);
+              }}
+            />
+            <PromptSaveMenu
+              projectId={props.project.id}
+              data={{ template: value, providerName: provider }}
+            />
+          </Box>
+        </StyledActionsWrapper>
+      </Portal>
+
       {runningOperation && (
         <BatchOperationDialog
           operation={runningOperation}

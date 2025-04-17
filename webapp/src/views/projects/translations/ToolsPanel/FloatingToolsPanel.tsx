@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, ButtonGroup, styled } from '@mui/material';
+import { styled } from '@mui/material';
 
 import { useGlobalContext } from 'tg.globalContext/GlobalContext';
 
@@ -23,11 +23,6 @@ const StyledContainer = styled('div')`
   overflow-x: hidden;
 `;
 
-const StyledButton = styled(Button)`
-  font-size: 12px;
-  padding: 4px 8px;
-`;
-
 type Props = {
   width: number;
 };
@@ -44,7 +39,7 @@ export const FloatingToolsPanel = ({ width }: Props) => {
     (c) => Boolean(c.translations?.[0]?.keyNamespace) && c.view === 'LIST'
   );
 
-  const [aiPlayground, setAiPlayground] = useUrlSearchState('aiPlayground', {
+  const [aiPlayground] = useUrlSearchState('aiPlayground', {
     defaultVal: undefined,
     history: false,
   });
@@ -91,25 +86,7 @@ export const FloatingToolsPanel = ({ width }: Props) => {
       }}
       ref={containerRef}
     >
-      <Box display="flex" justifyContent="center" paddingTop="8px">
-        <ButtonGroup size="small" variant="outlined">
-          <StyledButton
-            size="small"
-            color={!aiPlayground ? 'primary' : 'default'}
-            onClick={() => setAiPlayground(undefined)}
-          >
-            Translation tools
-          </StyledButton>
-          <StyledButton
-            size="small"
-            color={aiPlayground ? 'primary' : 'default'}
-            onClick={() => setAiPlayground('1')}
-          >
-            Ai playground
-          </StyledButton>
-        </ButtonGroup>
-      </Box>
-      {aiPlayground ? <AiPlayground /> : <ToolsPanel />}
+      {aiPlayground ? <AiPlayground width={width} /> : <ToolsPanel />}
     </StyledContainer>
   );
 };

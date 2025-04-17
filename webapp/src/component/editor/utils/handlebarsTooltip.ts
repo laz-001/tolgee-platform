@@ -3,12 +3,14 @@ import { syntaxTree } from '@codemirror/language';
 import { RefObject } from 'react';
 
 import { components } from 'tg.service/apiSchema.generated';
+import { useTranslate } from '@tolgee/react';
 
 type PromptVariableDto = components['schemas']['PromptVariableDto'];
 
 export const handlebarsTooltip = (
   variablesRef: RefObject<PromptVariableDto[] | undefined>,
-  unknownVariableMessageRef?: RefObject<string | undefined>
+  unknownVariableMessageRef: RefObject<string | undefined>,
+  t: ReturnType<typeof useTranslate>['t']
 ) =>
   hoverTooltip((context, pos, side) => {
     const tree = syntaxTree(context.state);
@@ -31,48 +33,80 @@ export const handlebarsTooltip = (
       return {
         pos: node.from,
         end: node.to,
+        above: false,
+        strictSide: true,
         create() {
           const dom = document.createElement('div');
-          const text = document.createElement('div');
-          text.textContent = variable
-            ? (variable.description ?? variable.value) || 'Empty'
-            : unknownVariableMessageRef?.current ?? 'Unknown variable';
-          dom.appendChild(text);
 
-          // find expression boundaries `{{` and `}}`
-          let startNode = node.prevSibling;
-          while (startNode && startNode?.name !== '{{') {
-            startNode = startNode.prevSibling;
-          }
-          let endNode = node.nextSibling;
-          while (endNode && endNode?.name !== '}}') {
-            endNode = endNode.nextSibling;
+          const title =
+            variable?.type === 'FRAGMENT'
+              ? t('handlebars_editor_fragment_title')
+              : variable?.description;
+          const content = variable
+            ? variable.value === ''
+              ? t('handlebars_editor_variable_empty')
+              : variable.value
+            : unknownVariableMessageRef?.current ??
+              t('handlebars_editor_variable_unknown');
+
+          let onInsert: (() => void) | undefined = undefined;
+
+          if (variable?.value && variable.type === 'FRAGMENT') {
+            // find expression boundaries `{{` and `}}`
+            let startNode = node.prevSibling;
+            while (startNode && startNode?.name !== '{{') {
+              startNode = startNode.prevSibling;
+            }
+            let endNode = node.nextSibling;
+            while (endNode && endNode?.name !== '}}') {
+              endNode = endNode.nextSibling;
+            }
+            if (startNode && endNode) {
+              const insertText = variable.value;
+              onInsert = () => {
+                const transaction = context.state.update({
+                  changes: {
+                    from: startNode.from,
+                    to: endNode.to,
+                    insert: insertText,
+                  },
+                });
+                context.dispatch(transaction);
+              };
+            }
           }
 
-          if (
-            variable?.value &&
-            startNode &&
-            endNode &&
-            variable.type === 'FRAGMENT'
-          ) {
-            const insertText = variable.value;
-            const onExpand = () => {
-              const transaction = context.state.update({
-                changes: {
-                  from: startNode.from,
-                  to: endNode.to,
-                  insert: insertText,
-                },
-              });
-              context.dispatch(transaction);
-            };
+          if (title || onInsert) {
+            const headerEl = document.createElement('div');
+            headerEl.classList.add('header');
 
-            const button = document.createElement('button');
-            button.textContent = 'Expand';
-            button.addEventListener('click', onExpand);
-            dom.appendChild(button);
+            const titleEl = document.createElement('div');
+            titleEl.classList.add('title');
+            titleEl.textContent = title ?? '';
+            headerEl.appendChild(titleEl);
+
+            if (onInsert) {
+              const actionEl = document.createElement('div');
+              actionEl.classList.add('action');
+              actionEl.role = 'button';
+              actionEl.textContent = t('handlebars_editor_insert_fragment');
+              actionEl.onclick = onInsert;
+              headerEl.appendChild(actionEl);
+            }
+
+            dom.appendChild(headerEl);
           }
-          return { dom };
+
+          if (content) {
+            const contentEl = document.createElement('div');
+            contentEl.classList.add('content');
+            contentEl.textContent = content;
+            dom.appendChild(contentEl);
+          }
+
+          return {
+            dom,
+          };
         },
       };
     }

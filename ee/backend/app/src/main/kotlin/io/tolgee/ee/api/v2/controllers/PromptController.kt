@@ -67,6 +67,15 @@ class PromptController(
     return promptModelAssembler.toModel(result)
   }
 
+  @GetMapping("/{promptId}")
+  @RequiresProjectPermissions([Scope.PROMPTS_VIEW])
+  fun getPrompt(
+    @PathVariable promptId: Long,
+  ): PromptModel {
+    val result = promptService.findPrompt(projectHolder.project.id, promptId)
+    return promptModelAssembler.toModel(result)
+  }
+
   @PutMapping("/{promptId}")
   @RequiresProjectPermissions([Scope.PROMPTS_EDIT])
   fun updatePrompt(
