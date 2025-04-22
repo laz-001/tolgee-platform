@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { styled } from '@mui/material';
+import { styled, SxProps } from '@mui/material';
 
 import { getLanguageDirection } from 'tg.fixtures/getLanguageDirection';
 import { TranslatedError } from 'tg.translationTools/TranslatedError';
@@ -62,6 +62,8 @@ type Props = {
   setValue: (val: string) => void;
   languageTag: string;
   pluralVariant: string | undefined;
+  showIcon?: boolean;
+  sx?: SxProps;
 };
 
 export const MachineTranslationItem = ({
@@ -72,6 +74,8 @@ export const MachineTranslationItem = ({
   languageTag,
   setValue,
   pluralVariant,
+  showIcon = true,
+  sx,
 }: Props) => {
   const error = data?.errorMessage?.toLowerCase();
   const errorParams = data?.errorParams;
@@ -97,8 +101,11 @@ export const MachineTranslationItem = ({
       }}
       data-cy="translation-tools-machine-translation-item"
       className={clsx({ clickable })}
+      sx={{ gridTemplateColumns: showIcon ? '20px 1fr' : '1fr', ...sx }}
     >
-      <ProviderLogo provider={provider} contextPresent={contextPresent} />
+      {showIcon && (
+        <ProviderLogo provider={provider} contextPresent={contextPresent} />
+      )}
       {result?.output ? (
         <>
           <StyledValue>

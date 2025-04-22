@@ -16,13 +16,14 @@ import { useConfirmationDialogService } from './useConfirmationDialogService';
 import { useMessageService } from './useMessageService';
 import { useUserDraggingService } from './useUserDraggingService';
 import { useUrlSearchState } from 'tg.hooks/useUrlSearchState';
+import { QUERY } from 'tg.constants/links';
 
 export const [GlobalContext, useGlobalActions, useGlobalContext] =
   createProvider(() => {
     const [globalError, setGlobalError] = useState<GlobalError>();
     const initialData = useInitialDataService();
     const auth = useAuthService(initialData);
-    const [aiPlayground] = useUrlSearchState('aiPlayground', {
+    const [aiPlayground] = useUrlSearchState(QUERY.TRANSLATIONS_AI_PLAYGROUND, {
       defaultVal: undefined,
     });
     const isEmailVerified =

@@ -10,6 +10,7 @@ import { TabMessage } from '../../common/TabMessage';
 import { PanelContentProps } from '../../common/types';
 import { MachineTranslationItem } from './MachineTranslationItem';
 import { useGlobalActions } from 'tg.globalContext/GlobalContext';
+import { MachineTranslationPromptWrapper } from './MachineTranslationPromptWrapper';
 
 const StyledContainer = styled('div')`
   display: flex;
@@ -127,18 +128,28 @@ export const MachineTranslation: React.FC<PanelContentProps> = ({
       ) : (
         !nothingFetched &&
         results?.map(([provider, data]) => {
-          return (
-            <MachineTranslationItem
-              key={provider}
-              data={data}
-              provider={provider}
-              isFetching={machineLoadable.isFetching}
-              languageTag={language.tag}
-              setValue={setValue}
-              contextPresent={contextPresent}
-              pluralVariant={activeVariant}
-            />
-          );
+          const props = {
+            data: data,
+            provider: provider,
+            isFetching: machineLoadable.isFetching,
+            languageTag: language.tag,
+            setValue: setValue,
+            contextPresent: contextPresent,
+            pluralVariant: activeVariant,
+          };
+          if (provider === 'PROMPT') {
+            return (
+              <MachineTranslationPromptWrapper key={provider}>
+                <MachineTranslationItem
+                  {...props}
+                  showIcon={false}
+                  sx={{ margin: 0 }}
+                />
+              </MachineTranslationPromptWrapper>
+            );
+          } else {
+            return <MachineTranslationItem key={provider} {...props} />;
+          }
         })
       )}
     </StyledContainer>

@@ -419,6 +419,7 @@ export enum QUERY {
   TRANSLATIONS_PREFILTERS_TASK_HIDE_CLOSED = 'taskHideClosed',
   TRANSLATIONS_TASK_DETAIL = 'taskDetail',
   TASKS_FILTERS_SHOW_ALL = 'showAll',
+  TRANSLATIONS_AI_PLAYGROUND = 'aiPlayground',
 }
 
 export const getTaskUrl = (projectId: number, taskNumber: number) => {
