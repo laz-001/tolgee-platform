@@ -1,41 +1,35 @@
 import { useEffect, useState } from 'react';
 import {
   Box,
-  Button,
   IconButton,
   MenuItem,
   Select,
   styled,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from '@mui/material';
-import { useQueryClient } from 'react-query';
-import { ChevronDown, ChevronUp, Send03 } from '@untitled-ui/icons-react';
+import { useTranslate } from '@tolgee/react';
+import { ChevronDown, ChevronUp, X } from '@untitled-ui/icons-react';
 
-import {
-  invalidateUrlPrefix,
-  useApiMutation,
-  useApiQuery,
-} from 'tg.service/http/useQueryApi';
+import { useApiMutation, useApiQuery } from 'tg.service/http/useQueryApi';
 import { EditorHandlebars } from 'tg.component/editor/EditorHandlebars';
 import { EditorWrapper } from 'tg.component/editor/EditorWrapper';
 import { stopBubble } from 'tg.fixtures/eventHandler';
 import { useLocalStorageState } from 'tg.hooks/useLocalStorageState';
 import { FieldLabel } from 'tg.component/FormField';
-import { SpinnerProgress } from 'tg.component/SpinnerProgress';
-import { confirmation } from 'tg.hooks/confirmation';
+import { EditorError } from 'tg.component/editor/utils/codemirrorError';
+import { useTranslationsActions } from 'tg.views/projects/translations/context/TranslationsContext';
+import { components } from 'tg.service/apiSchema.generated';
+import { DeletableKeyWithTranslationsModelType } from 'tg.views/projects/translations/context/types';
+import { useUrlSearchState } from 'tg.hooks/useUrlSearchState';
+import { QUERY } from 'tg.constants/links';
 
 import { AiResult } from './AiResult';
 import { PromptLoadMenu } from './PromptLoadMenu';
+import { PromptPreviewMenu } from './PromptPreviewMenu';
 import { PromptSaveMenu } from './PromptSaveMenu';
-import { EditorError } from 'tg.component/editor/utils/codemirrorError';
-import { useTranslationsActions } from 'tg.views/projects/translations/context/TranslationsContext';
-import { BatchJobModel } from 'tg.views/projects/translations/BatchOperations/types';
-import { BatchOperationDialog } from 'tg.views/projects/translations/BatchOperations/OperationsSummary/BatchOperationDialog';
-import { useUrlSearchState } from 'tg.hooks/useUrlSearchState';
-import { useTranslate } from '@tolgee/react';
-import { components } from 'tg.service/apiSchema.generated';
-import { DeletableKeyWithTranslationsModelType } from 'tg.views/projects/translations/context/types';
 
 type ProjectModel = components['schemas']['ProjectModel'];
 type LanguageModel = components['schemas']['LanguageModel'];
@@ -53,17 +47,6 @@ const StyledMainContent = styled('div')`
   align-self: start;
 `;
 
-const StyledActionsWrapper = styled('div')`
-  padding: 8px;
-  display: flex;
-  gap: 8px;
-  justify-content: space-between;
-  align-items: end;
-  position: sticky;
-  bottom: 0px;
-  background: ${({ theme }) => theme.palette.background.default};
-`;
-
 const StyledTextField = styled(TextField)`
   flex-grow: 1;
   opacity: 0.5;
@@ -77,13 +60,42 @@ const StyledTextField = styled(TextField)`
 
 const StyledHeader = styled('div')`
   display: grid;
-  margin: 20px;
+  margin: 16px 16px 0px 16px;
+  border-bottom: 1px solid ${({ theme }) => theme.palette.divider};
   gap: 16px;
 `;
 
 const StyledTitle = styled('div')`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const StyledTitleText = styled('div')`
   font-size: 20px;
   font-weight: 400;
+`;
+
+const StyledTab = styled(Tab)`
+  padding: 9px 16px;
+  min-height: 42px;
+`;
+
+const StyledTabs = styled(Tabs)`
+  margin-bottom: -1px;
+  min-height: unset;
+`;
+
+const StyledActionsWrapper = styled('div')`
+  padding: 12px 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: end;
+  position: sticky;
+  bottom: 0px;
+  background: ${({ theme }) => theme.palette.background.default};
+  box-shadow: 0px -4px 6px 0px rgba(0, 0, 0, 0.08);
 `;
 
 type Props = {
@@ -96,13 +108,22 @@ type Props = {
 export const AiPrompt: React.FC<Props> = (props) => {
   const projectId = props.project.id;
   const { t } = useTranslate();
-  const { getAllIds, setEdit, refetchTranslations } = useTranslationsActions();
-  const [lastOpenPrompt, setLastOpenPrompt] = useUrlSearchState(
-    `aiPlaygroundLastPrompt-${projectId}`,
-    { defaultVal: undefined }
+  const { refetchTranslations } = useTranslationsActions();
+  const [_, setAiPlayground] = useUrlSearchState(
+    QUERY.TRANSLATIONS_AI_PLAYGROUND,
+    {
+      defaultVal: undefined,
+      history: false,
+    }
   );
-  const [runningOperation, setRunningOperation] = useState<BatchJobModel>();
-  const queryClient = useQueryClient();
+  const [tab, setTab] = useLocalStorageState({
+    key: `aiPlaygroundTab-${projectId}`,
+    initial: 'advanced',
+  });
+  const [lastOpenPrompt, setLastOpenPrompt] = useLocalStorageState({
+    key: `aiPlaygroundLastPrompt-${projectId}`,
+    initial: undefined,
+  });
   const [value, setValue] = useLocalStorageState<string>({
     key: `aiPlaygroundLastValue-${projectId}`,
     initial: 'Hi translate from {{source}} to {{target}}',
@@ -146,41 +167,6 @@ export const AiPrompt: React.FC<Props> = (props) => {
       organizationId: props.project.organizationOwner!.id,
     },
   });
-
-  const mtTranslate = useApiMutation({
-    url: '/v2/projects/{projectId}/start-batch-job/ai-playground-translate',
-    method: 'post',
-  });
-
-  const handleRunBatch = async () => {
-    const allIds = await getAllIds();
-    confirmation({
-      title: `Run for ${allIds.length} keys?`,
-      onConfirm() {
-        setEdit(undefined);
-        mtTranslate
-          .mutateAsync({
-            content: {
-              'application/json': {
-                keyIds: allIds,
-                targetLanguageIds: [props.language.id],
-                llmPrompt: {
-                  name: '',
-                  template: value,
-                  providerName: provider,
-                },
-              },
-            },
-            path: {
-              projectId: props.project.id,
-            },
-          })
-          .then((data) => {
-            setRunningOperation(data);
-          });
-      },
-    });
-  };
 
   const cellSelected = Boolean(props.keyData && props.language);
 
@@ -240,7 +226,24 @@ export const AiPrompt: React.FC<Props> = (props) => {
     <StyledContainer>
       <StyledMainContent>
         <StyledHeader>
-          <StyledTitle>{lastPromptName}</StyledTitle>
+          <StyledTitle>
+            <StyledTitleText>{lastPromptName}</StyledTitleText>
+            <Box display="flex" alignItems="center">
+              <PromptLoadMenu
+                projectId={props.project.id}
+                onSelect={(item) => {
+                  setLastOpenPrompt(
+                    item.id !== undefined ? String(item.id) : undefined
+                  );
+                  setProvider(item.providerName);
+                  setValue(item.template);
+                }}
+              />
+              <IconButton onClick={() => setAiPlayground(undefined)}>
+                <X />
+              </IconButton>
+            </Box>
+          </StyledTitle>
 
           <Select
             size="small"
@@ -253,9 +256,14 @@ export const AiPrompt: React.FC<Props> = (props) => {
               </MenuItem>
             ))}
           </Select>
+          <StyledTabs value={tab} onChange={(_, value) => setTab(value)}>
+            <StyledTab label={t('ai_prompt_tab_basic')} value="basic" />
+            <StyledTab label={t('ai_prompt_tab_advanced')} value="advanced" />
+          </StyledTabs>
         </StyledHeader>
-        <Box sx={{ margin: '8px' }}>
-          <FieldLabel>Prompt</FieldLabel>
+
+        <Box sx={{ margin: '20px 16px' }}>
+          <FieldLabel>{t('ai_prompt_label')}</FieldLabel>
           <EditorWrapper onKeyDown={stopBubble()}>
             <EditorHandlebars
               minHeight={100}
@@ -278,32 +286,7 @@ export const AiPrompt: React.FC<Props> = (props) => {
           </EditorWrapper>
         </Box>
 
-        <Box
-          sx={{ margin: '8px', display: 'flex', gap: 1, justifyContent: 'end' }}
-        >
-          <Button
-            size="small"
-            color="secondary"
-            onClick={handleRunBatch}
-            disabled={!cellSelected || promptLoadable.isLoading}
-          >
-            Batch
-          </Button>
-          <IconButton
-            color="primary"
-            onClick={handleTestPrompt}
-            disabled={!cellSelected || promptLoadable.isLoading}
-            size="medium"
-          >
-            {promptLoadable.isLoading ? (
-              <SpinnerProgress size={22} />
-            ) : (
-              <Send03 width={22} height={22} />
-            )}
-          </IconButton>
-        </Box>
-
-        <Box sx={{ margin: '8px', display: 'grid' }}>
+        <Box sx={{ margin: '16px', display: 'grid' }}>
           <AiResult
             raw={promptLoadable.data?.result}
             json={promptLoadable.data?.parsedJson}
@@ -324,8 +307,8 @@ export const AiPrompt: React.FC<Props> = (props) => {
         </Box>
 
         {Boolean(expanded) && (
-          <Box sx={{ margin: '8px', display: 'grid' }}>
-            <FieldLabel>Rendered prompt</FieldLabel>
+          <Box sx={{ margin: '16px', display: 'grid' }}>
+            <FieldLabel> {t('ai_prompt_rendered_label')}</FieldLabel>
             <StyledTextField
               multiline
               variant="outlined"
@@ -350,33 +333,26 @@ export const AiPrompt: React.FC<Props> = (props) => {
             {expanded ? <ChevronUp /> : <ChevronDown />}
           </IconButton>
         </Box>
-
-        {runningOperation && (
-          <BatchOperationDialog
-            operation={runningOperation}
-            onClose={() => setRunningOperation(undefined)}
-            onFinished={() => {
-              refetchTranslations();
-              setRunningOperation(undefined);
-              invalidateUrlPrefix(queryClient, '');
-            }}
-          />
-        )}
       </StyledMainContent>
       <StyledActionsWrapper>
-        <PromptLoadMenu
-          projectId={props.project.id}
-          onSelect={(item) => {
-            setLastOpenPrompt(
-              item.id !== undefined ? String(item.id) : undefined
-            );
-            setProvider(item.providerName);
-            setValue(item.template);
+        <PromptPreviewMenu
+          projectId={projectId}
+          languageId={props.language?.id}
+          templateValue={value}
+          providerName={provider}
+          onBatchFinished={() => {
+            refetchTranslations();
           }}
+          onTestPrompt={handleTestPrompt}
+          loading={promptLoadable.isLoading}
         />
         <PromptSaveMenu
-          projectId={props.project.id}
-          data={{ template: value, providerName: provider }}
+          projectId={projectId}
+          data={{
+            template: value,
+            providerName: provider,
+          }}
+          existingPrompt={lastPrompt.data}
         />
       </StyledActionsWrapper>
     </StyledContainer>

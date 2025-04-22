@@ -1,5 +1,16 @@
-import { Box, Button, Menu, MenuItem, styled } from '@mui/material';
 import { useRef, useState } from 'react';
+import {
+  Box,
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  styled,
+  Tooltip,
+} from '@mui/material';
+import { useTranslate } from '@tolgee/react';
+import { DotsVertical } from '@untitled-ui/icons-react';
+
 import { CompactListSubheader } from 'tg.component/ListComponents';
 import { stopAndPrevent } from 'tg.fixtures/eventHandler';
 import { components } from 'tg.service/apiSchema.generated';
@@ -26,6 +37,7 @@ type Props = {
 
 export const PromptLoadMenu = ({ onSelect, projectId }: Props) => {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslate();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const existingPrompts = useApiQuery({
     url: '/v2/projects/{projectId}/prompts',
@@ -64,14 +76,11 @@ export const PromptLoadMenu = ({ onSelect, projectId }: Props) => {
 
   return (
     <Box>
-      <Button
-        variant="outlined"
-        size="small"
-        ref={buttonRef}
-        onClick={() => setOpen(true)}
-      >
-        Existing prompts...
-      </Button>
+      <Tooltip title={t('ai_prompt_open_existing_prompt')} disableInteractive>
+        <IconButton ref={buttonRef} onClick={() => setOpen(true)}>
+          <DotsVertical height={20} width={20} />
+        </IconButton>
+      </Tooltip>
       {open && (
         <Menu
           open={true}
@@ -80,7 +89,7 @@ export const PromptLoadMenu = ({ onSelect, projectId }: Props) => {
           MenuListProps={{ sx: { minWidth: 250 } }}
         >
           <CompactListSubheader sx={{ pt: 0 }}>
-            Load existing prompt
+            {t('ai_prompt_open_existing_prompt')}
           </CompactListSubheader>
           {prompts?.map((item) => (
             <MenuItem
@@ -112,7 +121,6 @@ export const PromptLoadMenu = ({ onSelect, projectId }: Props) => {
               )}
             </MenuItem>
           ))}
-          {!prompts.length && <MenuItem disabled>No prompts yet</MenuItem>}
         </Menu>
       )}
     </Box>

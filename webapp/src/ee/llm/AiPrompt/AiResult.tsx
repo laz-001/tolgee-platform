@@ -2,6 +2,7 @@ import { Box, Button, ButtonGroup, styled, TextField } from '@mui/material';
 import { useLocalStorageState } from 'tg.hooks/useLocalStorageState';
 import { FieldLabel } from 'tg.component/FormField';
 import { TranslationVisual } from 'tg.views/projects/translations/translationVisual/TranslationVisual';
+import { useTranslate } from '@tolgee/react';
 
 const StyledTextField = styled(TextField)`
   flex-grow: 1;
@@ -27,6 +28,7 @@ type Props = {
 };
 
 export const AiResult = ({ raw, json, isPlural, locale }: Props) => {
+  const { t } = useTranslate();
   const [_mode, setMode] = useLocalStorageState({
     key: 'aiPlaygroundResultMode',
     initial: 'translation',
@@ -37,7 +39,9 @@ export const AiResult = ({ raw, json, isPlural, locale }: Props) => {
   return (
     <Box display="grid" gap={1}>
       <Box display="flex" justifyContent="space-between" alignItems="end">
-        <FieldLabel sx={{ margin: 0 }}>Result</FieldLabel>
+        <FieldLabel sx={{ margin: 0 }}>
+          {t('ai_prompt_result_label')}
+        </FieldLabel>
         <ButtonGroup disabled={!json?.output}>
           <Button
             size="small"

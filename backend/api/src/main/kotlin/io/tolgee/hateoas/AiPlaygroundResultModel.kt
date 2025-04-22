@@ -7,4 +7,5 @@ class AiPlaygroundResultModel(
   val languageId: Long,
   val translation: String?,
   val contextDescription: String?,
+  val renderedPrompt: String?,
 ) : RepresentationModel<AiPlaygroundResultModel>()

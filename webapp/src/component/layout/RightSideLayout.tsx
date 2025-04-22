@@ -45,7 +45,7 @@ export const RightSideLayout = ({
       )}
       {quickStartEnabled && !hideQuickStart && (
         <RightSidePanel
-          width={rightPanelWidth ?? 400}
+          width={rightPanelWidth || 400}
           floating={quickStartFloating}
           open={quickStartFloating ? quickStartFloatingOpen : quickStartOpen}
         >
