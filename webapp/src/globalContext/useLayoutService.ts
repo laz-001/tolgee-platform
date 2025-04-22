@@ -4,41 +4,45 @@ import type { useQuickStartGuideService } from './useQuickStartGuideService';
 
 export const TOP_BAR_HEIGHT = 52;
 
-export type RightPanelContent = 'quick_start';
-
 type Props = {
   quickStart: ReturnType<typeof useQuickStartGuideService>;
+  aiPlaygroundEnabled: boolean;
 };
 
-export const useLayoutService = ({ quickStart }: Props) => {
+export const useLayoutService = ({
+  quickStart,
+  aiPlaygroundEnabled,
+}: Props) => {
   const [topBannerHeight, setTopBannerHeight] = useState(0);
   const [topSubBannerHeight, setTopSubBannerHeight] = useState(0);
   const [topBarHidden, setTopBarHidden] = useState(false);
   const viewPortSize = useWindowSize();
-  const [rightPanelFloatingForced, setRightPanelFloatingForced] =
-    useState(false);
 
   const bodyWidth = viewPortSize.width;
 
-  const rightPanelShouldFloat = bodyWidth < 1200 || rightPanelFloatingForced;
+  const rightPanelHidden =
+    bodyWidth < 1200 ||
+    ((!quickStart.state.enabled ||
+      !quickStart.state.open ||
+      quickStart.state.floatingForced) &&
+      !aiPlaygroundEnabled);
 
-  const rightPanelFloating =
-    quickStart.state.floatingOpen &&
+  const quickStartFloating =
     quickStart.state.enabled &&
-    rightPanelShouldFloat;
+    (quickStart.state.floatingForced || aiPlaygroundEnabled);
 
-  const rightPanelWidth =
-    !rightPanelShouldFloat && quickStart.state.open && quickStart.state.enabled
-      ? Math.min(400, bodyWidth)
-      : 0;
+  const desiredWidth = aiPlaygroundEnabled ? Math.max(400, bodyWidth / 3) : 400;
+
+  const rightPanelWidth = !rightPanelHidden
+    ? Math.min(desiredWidth, bodyWidth)
+    : 0;
 
   const state = {
     topBannerHeight,
     topSubBannerHeight,
     bodyWidth,
     rightPanelWidth,
-    rightPanelFloating,
-    rightPanelShouldFloat,
+    quickStartFloating,
     topBarHeight: topBarHidden ? 0 : TOP_BAR_HEIGHT,
   };
 
@@ -46,7 +50,6 @@ export const useLayoutService = ({ quickStart }: Props) => {
     setTopBannerHeight,
     setTopSubBannerHeight,
     setTopBarHidden,
-    setRightPanelFloatingForced,
   };
 
   return { state, actions };

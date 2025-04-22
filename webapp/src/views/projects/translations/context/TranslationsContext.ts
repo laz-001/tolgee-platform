@@ -60,8 +60,7 @@ export const [
   const [view, setView] = useUrlSearchState('view', { defaultVal: 'LIST' });
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const layout = useLayoutService({
-    sidePanelOpen: sidePanelOpen || props.aiPlayground,
-    wider: props.aiPlayground,
+    sidePanelOpen: sidePanelOpen && !props.aiPlayground,
   });
   const urlLanguages = useUrlSearchArray().languages;
   const requiredLanguages = urlLanguages?.length

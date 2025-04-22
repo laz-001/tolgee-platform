@@ -4,7 +4,6 @@ import {
   Button,
   IconButton,
   MenuItem,
-  Portal,
   Select,
   styled,
   TextField,
@@ -41,16 +40,28 @@ import { DeletableKeyWithTranslationsModelType } from 'tg.views/projects/transla
 type ProjectModel = components['schemas']['ProjectModel'];
 type LanguageModel = components['schemas']['LanguageModel'];
 
+const StyledContainer = styled('div')`
+  display: grid;
+  height: 100%;
+  max-height: 100%;
+  grid-template-rows: 1fr auto;
+  overflow: auto;
+`;
+
+const StyledMainContent = styled('div')`
+  display: grid;
+  align-self: start;
+`;
+
 const StyledActionsWrapper = styled('div')`
   padding: 8px;
   display: flex;
   gap: 8px;
   justify-content: space-between;
   align-items: end;
-  position: fixed;
+  position: sticky;
   bottom: 0px;
   background: ${({ theme }) => theme.palette.background.default};
-  z-index: ${({ theme }) => theme.zIndex.appBar};
 `;
 
 const StyledTextField = styled(TextField)`
@@ -226,151 +237,148 @@ export const AiPrompt: React.FC<Props> = (props) => {
   const usage = promptLoadable.data?.usage;
 
   return (
-    <Box display="grid">
-      <StyledHeader>
-        <StyledTitle>{lastPromptName}</StyledTitle>
+    <StyledContainer>
+      <StyledMainContent>
+        <StyledHeader>
+          <StyledTitle>{lastPromptName}</StyledTitle>
 
-        <Select
-          size="small"
-          value={provider}
-          onChange={(e) => setProvider(e.target.value)}
-        >
-          {providersLoadable.data?.items.map((i) => (
-            <MenuItem key={i.name} value={i.name}>
-              {i.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </StyledHeader>
-      <Box sx={{ margin: '8px' }}>
-        <FieldLabel>Prompt</FieldLabel>
-        <EditorWrapper onKeyDown={stopBubble()}>
-          <EditorHandlebars
-            minHeight={100}
-            value={value}
-            onChange={setValue}
-            unknownVariableMessage={
-              cellSelected
-                ? 'Unknown variable'
-                : 'Select translation to see the value'
-            }
-            shortcuts={[
-              {
-                key: 'Mod-Enter',
-                run: () => (handleTestPrompt(), true),
-              },
-            ]}
-            availableVariables={promptVariables.data?.data}
-            errors={errors}
-          />
-        </EditorWrapper>
-      </Box>
-
-      <Box
-        sx={{ margin: '8px', display: 'flex', gap: 1, justifyContent: 'end' }}
-      >
-        <Button
-          size="small"
-          color="secondary"
-          onClick={handleRunBatch}
-          disabled={!cellSelected || promptLoadable.isLoading}
-        >
-          Batch
-        </Button>
-        <IconButton
-          color="primary"
-          onClick={handleTestPrompt}
-          disabled={!cellSelected || promptLoadable.isLoading}
-          size="medium"
-        >
-          {promptLoadable.isLoading ? (
-            <SpinnerProgress size={22} />
-          ) : (
-            <Send03 width={22} height={22} />
-          )}
-        </IconButton>
-      </Box>
-
-      <Box sx={{ margin: '8px', display: 'grid' }}>
-        <AiResult
-          raw={promptLoadable.data?.result}
-          json={promptLoadable.data?.parsedJson}
-          isPlural={props.keyData?.keyIsPlural}
-          locale={props.language?.tag}
-        />
-
-        <Typography variant="caption" minHeight={20}>
-          {usage?.inputTokens && (
-            <>
-              {`tokens: ${usage.inputTokens + (usage.outputTokens ?? 0)}`}
-              {`, credits: ${promptLoadable.data!.price! / 100}`}
-              {typeof usage.cachedTokens === 'number' &&
-                `, cached: ${usage.cachedTokens}`}
-            </>
-          )}
-        </Typography>
-      </Box>
-
-      {Boolean(expanded) && (
-        <Box sx={{ margin: '8px', display: 'grid' }}>
-          <FieldLabel>Rendered prompt</FieldLabel>
-          <StyledTextField
-            multiline
-            variant="outlined"
+          <Select
             size="small"
-            value={promptLoadable.data?.prompt}
-            onChange={(e) => e.preventDefault()}
-            data-cy="translations-comments-output"
-            InputProps={{
-              sx: {
-                padding: '8px 4px 8px 12px',
-                borderRadius: '8px',
-              },
-            }}
-          />
+            value={provider}
+            onChange={(e) => setProvider(e.target.value)}
+          >
+            {providersLoadable.data?.items.map((i) => (
+              <MenuItem key={i.name} value={i.name}>
+                {i.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </StyledHeader>
+        <Box sx={{ margin: '8px' }}>
+          <FieldLabel>Prompt</FieldLabel>
+          <EditorWrapper onKeyDown={stopBubble()}>
+            <EditorHandlebars
+              minHeight={100}
+              value={value}
+              onChange={setValue}
+              unknownVariableMessage={
+                cellSelected
+                  ? 'Unknown variable'
+                  : 'Select translation to see the value'
+              }
+              shortcuts={[
+                {
+                  key: 'Mod-Enter',
+                  run: () => (handleTestPrompt(), true),
+                },
+              ]}
+              availableVariables={promptVariables.data?.data}
+              errors={errors}
+            />
+          </EditorWrapper>
         </Box>
-      )}
 
-      <Box display="flex" justifyContent="center">
-        <IconButton
-          onClick={() => setExpanded((val) => (val ? undefined : 'true'))}
+        <Box
+          sx={{ margin: '8px', display: 'flex', gap: 1, justifyContent: 'end' }}
         >
-          {expanded ? <ChevronUp /> : <ChevronDown />}
-        </IconButton>
-      </Box>
+          <Button
+            size="small"
+            color="secondary"
+            onClick={handleRunBatch}
+            disabled={!cellSelected || promptLoadable.isLoading}
+          >
+            Batch
+          </Button>
+          <IconButton
+            color="primary"
+            onClick={handleTestPrompt}
+            disabled={!cellSelected || promptLoadable.isLoading}
+            size="medium"
+          >
+            {promptLoadable.isLoading ? (
+              <SpinnerProgress size={22} />
+            ) : (
+              <Send03 width={22} height={22} />
+            )}
+          </IconButton>
+        </Box>
 
-      <Portal>
-        <StyledActionsWrapper style={{ width: props.width, right: 22 }}>
-          <Box display="flex" gap={1}>
-            <PromptLoadMenu
-              projectId={props.project.id}
-              onSelect={(item) => {
-                setLastOpenPrompt(
-                  item.id !== undefined ? String(item.id) : undefined
-                );
-                setProvider(item.providerName);
-                setValue(item.template);
+        <Box sx={{ margin: '8px', display: 'grid' }}>
+          <AiResult
+            raw={promptLoadable.data?.result}
+            json={promptLoadable.data?.parsedJson}
+            isPlural={props.keyData?.keyIsPlural}
+            locale={props.language?.tag}
+          />
+
+          <Typography variant="caption" minHeight={20}>
+            {usage?.inputTokens && (
+              <>
+                {`tokens: ${usage.inputTokens + (usage.outputTokens ?? 0)}`}
+                {`, credits: ${promptLoadable.data!.price! / 100}`}
+                {typeof usage.cachedTokens === 'number' &&
+                  `, cached: ${usage.cachedTokens}`}
+              </>
+            )}
+          </Typography>
+        </Box>
+
+        {Boolean(expanded) && (
+          <Box sx={{ margin: '8px', display: 'grid' }}>
+            <FieldLabel>Rendered prompt</FieldLabel>
+            <StyledTextField
+              multiline
+              variant="outlined"
+              size="small"
+              value={promptLoadable.data?.prompt}
+              onChange={(e) => e.preventDefault()}
+              data-cy="translations-comments-output"
+              InputProps={{
+                sx: {
+                  padding: '8px 4px 8px 12px',
+                  borderRadius: '8px',
+                },
               }}
             />
-            <PromptSaveMenu
-              projectId={props.project.id}
-              data={{ template: value, providerName: provider }}
-            />
           </Box>
-        </StyledActionsWrapper>
-      </Portal>
+        )}
 
-      {runningOperation && (
-        <BatchOperationDialog
-          operation={runningOperation}
-          onClose={() => setRunningOperation(undefined)}
-          onFinished={() => {
-            refetchTranslations();
-            setRunningOperation(undefined);
-            invalidateUrlPrefix(queryClient, '');
+        <Box display="flex" justifyContent="center">
+          <IconButton
+            onClick={() => setExpanded((val) => (val ? undefined : 'true'))}
+          >
+            {expanded ? <ChevronUp /> : <ChevronDown />}
+          </IconButton>
+        </Box>
+
+        {runningOperation && (
+          <BatchOperationDialog
+            operation={runningOperation}
+            onClose={() => setRunningOperation(undefined)}
+            onFinished={() => {
+              refetchTranslations();
+              setRunningOperation(undefined);
+              invalidateUrlPrefix(queryClient, '');
+            }}
+          />
+        )}
+      </StyledMainContent>
+      <StyledActionsWrapper>
+        <PromptLoadMenu
+          projectId={props.project.id}
+          onSelect={(item) => {
+            setLastOpenPrompt(
+              item.id !== undefined ? String(item.id) : undefined
+            );
+            setProvider(item.providerName);
+            setValue(item.template);
           }}
         />
-      )}
-    </Box>
+        <PromptSaveMenu
+          projectId={props.project.id}
+          data={{ template: value, providerName: provider }}
+        />
+      </StyledActionsWrapper>
+    </StyledContainer>
   );
 };

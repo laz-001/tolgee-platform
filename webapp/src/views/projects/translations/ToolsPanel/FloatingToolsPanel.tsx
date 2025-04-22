@@ -6,8 +6,6 @@ import { useGlobalContext } from 'tg.globalContext/GlobalContext';
 import { useTranslationsSelector } from '../context/TranslationsContext';
 import { ToolsPanel } from './ToolsPanel';
 import { useHeaderNsContext } from '../context/HeaderNsContext';
-import { useUrlSearchState } from 'tg.hooks/useUrlSearchState';
-import { AiPlayground } from './AiPlayground';
 
 const StyledContainer = styled('div')`
   position: relative;
@@ -39,11 +37,6 @@ export const FloatingToolsPanel = ({ width }: Props) => {
     (c) => Boolean(c.translations?.[0]?.keyNamespace) && c.view === 'LIST'
   );
 
-  const [aiPlayground] = useUrlSearchState('aiPlayground', {
-    defaultVal: undefined,
-    history: false,
-  });
-
   useEffect(() => {
     function recalculate() {
       const position = containerRef.current?.getBoundingClientRect();
@@ -72,7 +65,7 @@ export const FloatingToolsPanel = ({ width }: Props) => {
 
   return (
     <StyledContainer
-      key={aiPlayground ? undefined : `${keyId}.${language?.id}`}
+      key={`${keyId}.${language?.id}`}
       style={{
         top: topBannerHeight + topBarHeight + floatingBannerHeight,
         height: `calc(${-fixedTopDistance}px + 100vh)`,
@@ -86,7 +79,7 @@ export const FloatingToolsPanel = ({ width }: Props) => {
       }}
       ref={containerRef}
     >
-      {aiPlayground ? <AiPlayground width={width} /> : <ToolsPanel />}
+      <ToolsPanel />
     </StyledContainer>
   );
 };
