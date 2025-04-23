@@ -60,7 +60,7 @@ const StyledTextField = styled(TextField)`
 
 const StyledHeader = styled('div')`
   display: grid;
-  margin: 16px 16px 0px 16px;
+  margin: 16px 20px 0px 20px;
   border-bottom: 1px solid ${({ theme }) => theme.palette.divider};
   gap: 16px;
 `;
@@ -87,7 +87,7 @@ const StyledTabs = styled(Tabs)`
 `;
 
 const StyledActionsWrapper = styled('div')`
-  padding: 12px 16px;
+  padding: 12px 20px;
   display: flex;
   gap: 8px;
   justify-content: space-between;
@@ -262,7 +262,7 @@ export const AiPrompt: React.FC<Props> = (props) => {
           </StyledTabs>
         </StyledHeader>
 
-        <Box sx={{ margin: '20px 16px' }}>
+        <Box sx={{ margin: '20px 20px' }}>
           <FieldLabel>{t('ai_prompt_label')}</FieldLabel>
           <EditorWrapper onKeyDown={stopBubble()}>
             <EditorHandlebars
@@ -286,7 +286,7 @@ export const AiPrompt: React.FC<Props> = (props) => {
           </EditorWrapper>
         </Box>
 
-        <Box sx={{ margin: '16px', display: 'grid' }}>
+        <Box sx={{ margin: '20px', display: 'grid' }}>
           <AiResult
             raw={promptLoadable.data?.result}
             json={promptLoadable.data?.parsedJson}
@@ -307,7 +307,7 @@ export const AiPrompt: React.FC<Props> = (props) => {
         </Box>
 
         {Boolean(expanded) && (
-          <Box sx={{ margin: '16px', display: 'grid' }}>
+          <Box sx={{ margin: '20px', display: 'grid' }}>
             <FieldLabel> {t('ai_prompt_rendered_label')}</FieldLabel>
             <StyledTextField
               multiline
