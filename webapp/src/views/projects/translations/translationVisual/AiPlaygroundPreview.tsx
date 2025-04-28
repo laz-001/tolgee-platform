@@ -1,15 +1,14 @@
-import { styled, Tooltip, useTheme } from '@mui/material';
+import { Box, styled, SxProps, Tooltip, useTheme } from '@mui/material';
 import { Stars } from 'tg.component/CustomIcons';
 import { TranslationVisual } from './TranslationVisual';
+import { wrapIf } from 'tg.fixtures/wrapIf';
 
-const StyledAiPreview = styled('div')`
+const StyledAiPreview = styled(Box)`
   display: grid;
   background: ${({ theme }) => theme.palette.tokens.secondary._states.selected};
-  justify-self: start;
-  align-self: start;
   grid-template-columns: auto 1fr;
   gap: 4px;
-  padding: 4px 8px;
+  padding: 8px;
   border-radius: 8px;
 `;
 
@@ -22,6 +21,7 @@ type Props = {
   contextDescription: string | undefined;
   isPlural: boolean;
   locale: string;
+  sx?: SxProps;
 };
 
 export const AiPlaygroundPreview = ({
@@ -29,22 +29,24 @@ export const AiPlaygroundPreview = ({
   contextDescription,
   isPlural,
   locale,
+  sx,
 }: Props) => {
   const theme = useTheme();
-  return (
-    <Tooltip title={contextDescription}>
-      <StyledAiPreview>
-        <Stars width={20} height={20} color={theme.palette.secondary.main} />
-        <StyledContent>
-          <TranslationVisual
-            text={translation}
-            isPlural={isPlural}
-            locale={locale}
-            maxLines={3}
-            extraPadding={false}
-          />
-        </StyledContent>
-      </StyledAiPreview>
-    </Tooltip>
+  return wrapIf(
+    contextDescription,
+    <StyledAiPreview {...{ sx }}>
+      <Stars width={20} height={20} color={theme.palette.secondary.main} />
+      <StyledContent>
+        <TranslationVisual
+          text={translation}
+          isPlural={isPlural}
+          locale={locale}
+          maxLines={3}
+          extraPadding={false}
+        />
+      </StyledContent>
+    </StyledAiPreview>,
+    // @ts-ignore
+    <Tooltip title={contextDescription} />
   );
 };
