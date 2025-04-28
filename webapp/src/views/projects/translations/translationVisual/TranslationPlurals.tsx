@@ -13,7 +13,6 @@ const StyledContainer = styled('div')`
 `;
 
 const StyledContainerSimple = styled('div')`
-  padding-top: 4px;
   display: grid;
 `;
 
@@ -70,6 +69,7 @@ type Props = {
   activeVariant?: string;
   variantPaddingTop?: number | string;
   exactForms?: number[];
+  extraPadding?: boolean;
 };
 
 export const TranslationPlurals = ({
@@ -80,6 +80,7 @@ export const TranslationPlurals = ({
   activeVariant,
   variantPaddingTop,
   exactForms,
+  extraPadding = true,
 }: Props) => {
   const variants = useMemo(
     () => getForms(locale, value, exactForms),
@@ -124,7 +125,7 @@ export const TranslationPlurals = ({
     );
   }
   return (
-    <StyledContainerSimple>
+    <StyledContainerSimple sx={{ paddingTop: extraPadding ? '4px' : 0 }}>
       {render({
         content: value.variants['other'] ?? '',
         locale,

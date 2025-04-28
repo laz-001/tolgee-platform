@@ -21,6 +21,7 @@ type Props = {
   width?: number | string;
   disabled?: boolean;
   isPlural: boolean;
+  extraPadding?: boolean;
 };
 
 export const TranslationVisual = ({
@@ -30,6 +31,7 @@ export const TranslationVisual = ({
   width,
   disabled,
   isPlural,
+  extraPadding,
 }: Props) => {
   const project = useProject();
   const value = useMemo(() => {
@@ -52,6 +54,7 @@ export const TranslationVisual = ({
     <TranslationPlurals
       value={value}
       locale={locale}
+      extraPadding={extraPadding}
       render={({ content, exampleValue, variant }) => (
         <LimitedHeightText
           maxLines={maxLines === undefined ? 3 : maxLines!}

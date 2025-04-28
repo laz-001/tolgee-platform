@@ -44,7 +44,9 @@ export const PromptPreviewMenu = ({
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { t } = useTranslate();
-  const translationsTotal = useTranslationsSelector((c) => c.translationsTotal);
+  const translationsTotal = useTranslationsSelector(
+    (c) => c.translationsTotal ?? 0
+  );
 
   const disabled = languageId === undefined;
 
@@ -110,6 +112,7 @@ export const PromptPreviewMenu = ({
 
       {batchDialogOpen && (
         <PreviewBatchDialog
+          numberOfKeys={translationsTotal}
           onStart={(data) => setRunningOperation(data)}
           onClose={() => setBatchDialogOpen(false)}
           providerName={providerName}

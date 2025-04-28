@@ -41,6 +41,7 @@ export const AiPlaygroundPreview = ({
             isPlural={isPlural}
             locale={locale}
             maxLines={3}
+            extraPadding={false}
           />
         </StyledContent>
       </StyledAiPreview>

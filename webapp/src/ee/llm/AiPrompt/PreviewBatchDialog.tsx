@@ -24,6 +24,7 @@ type Props = {
   providerName: string;
   template: string;
   projectId: number;
+  numberOfKeys: number;
 };
 
 export const PreviewBatchDialog = ({
@@ -32,6 +33,7 @@ export const PreviewBatchDialog = ({
   providerName,
   template,
   projectId,
+  numberOfKeys,
 }: Props) => {
   const { getAllIds } = useTranslationsActions();
   const { t } = useTranslate();
@@ -81,10 +83,12 @@ export const PreviewBatchDialog = ({
 
   return (
     <Dialog open={true} onClose={onClose}>
-      <DialogTitle>{t('ai_prompt_batch_dialog_title')}</DialogTitle>
+      <DialogTitle>
+        {t('ai_prompt_batch_dialog_title', { value: numberOfKeys })}
+      </DialogTitle>
       <DialogContent>
         <BatchOperationsLanguagesSelect
-          languages={languages || []}
+          languages={allLanguages || []}
           value={selectedLangs || []}
           onChange={setSelectedLangs}
           languagePermission="translations.edit"
