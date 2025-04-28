@@ -1,4 +1,4 @@
-import { Box, Button, styled } from '@mui/material';
+import { Box, Button, styled, SxProps } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
 import { Stars } from 'tg.component/CustomIcons';
 import { QUERY } from 'tg.constants/links';
@@ -6,11 +6,11 @@ import { useUrlSearchState } from 'tg.hooks/useUrlSearchState';
 
 const StyledContainer = styled('div')`
   display: grid;
-  padding: 20px;
+  padding: 12px;
   background: ${({ theme }) => theme.palette.tokens.primary._states.hover};
-  border-radius: 8px;
+  border-radius: 0px 4px 4px 0px;
   gap: 4px;
-  margin: 0px 8px;
+  margin-left: -8px;
 `;
 
 const StyledHeading = styled('div')`
@@ -23,6 +23,7 @@ const StyledTitle = styled(Box)`
   color: ${({ theme }) => theme.palette.primary.main};
   display: flex;
   gap: 4px;
+  padding-left: 8px;
 `;
 
 const StyledTitleText = styled(Box)`
@@ -35,9 +36,15 @@ const StyledTitleText = styled(Box)`
 
 type Props = {
   children: React.ReactNode;
+  className?: string;
+  sx?: SxProps;
 };
 
-export const MachineTranslationPromptWrapper = ({ children }: Props) => {
+export const MachineTranslationPromptWrapper = ({
+  children,
+  sx,
+  className,
+}: Props) => {
   const [_, setAiPlayground] = useUrlSearchState(
     QUERY.TRANSLATIONS_AI_PLAYGROUND,
     {
@@ -47,7 +54,7 @@ export const MachineTranslationPromptWrapper = ({ children }: Props) => {
   );
   const { t } = useTranslate();
   return (
-    <StyledContainer>
+    <StyledContainer {...{ sx, className }}>
       <StyledHeading>
         <StyledTitle>
           <Stars />

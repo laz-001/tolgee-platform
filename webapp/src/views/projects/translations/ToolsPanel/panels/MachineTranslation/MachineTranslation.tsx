@@ -15,6 +15,16 @@ import { MachineTranslationPromptWrapper } from './MachineTranslationPromptWrapp
 const StyledContainer = styled('div')`
   display: flex;
   flex-direction: column;
+  .promptWrapper {
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+  .promptWrapper + * {
+    margin-top: 12px;
+  }
+  * + .promptWrapper {
+    margin-top: 12px;
+  }
 `;
 
 const StyledValue = styled('div')`
@@ -139,11 +149,14 @@ export const MachineTranslation: React.FC<PanelContentProps> = ({
           };
           if (provider === 'PROMPT') {
             return (
-              <MachineTranslationPromptWrapper key={provider}>
+              <MachineTranslationPromptWrapper
+                key={provider}
+                className="promptWrapper"
+              >
                 <MachineTranslationItem
                   {...props}
                   showIcon={false}
-                  sx={{ margin: 0 }}
+                  sx={{ margin: 0, padding: '8px' }}
                 />
               </MachineTranslationPromptWrapper>
             );

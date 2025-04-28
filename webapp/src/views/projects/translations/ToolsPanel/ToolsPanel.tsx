@@ -22,11 +22,12 @@ const StyledButton = styled(IconButton)`
 const StyledTitle = styled(Box)`
   margin-top: 6px;
   margin-left: 8px;
+  padding-left: 8px;
 `;
 
 const StyledWrapper = styled('div')`
   display: grid;
-  padding: 8px 0px 8px 8px;
+  padding: 8px 0px 8px 0px;
   padding-bottom: 100px;
 `;
 

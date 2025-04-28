@@ -244,11 +244,11 @@ export const AiPrompt: React.FC<Props> = (props) => {
               </IconButton>
             </Box>
           </StyledTitle>
-
           <Select
             size="small"
             value={provider}
             onChange={(e) => setProvider(e.target.value)}
+            sx={{ width: '50%' }}
           >
             {providersLoadable.data?.items.map((i) => (
               <MenuItem key={i.name} value={i.name}>

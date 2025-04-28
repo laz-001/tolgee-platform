@@ -97,7 +97,6 @@ export const StyledCell = styled('div')<{ position?: PositionType }>`
   }
 
   ${combine('&', CELL_LOWERED)} {
-    z-index: 1;
     --cell-background: ${({ theme }) => theme.palette.cell.selected};
     background: ${({ theme }) => theme.palette.cell.selected} !important;
     box-shadow: ${({ theme }) =>

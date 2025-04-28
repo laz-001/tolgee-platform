@@ -16,7 +16,7 @@ import { LoadingSkeletonFadingIn } from 'tg.component/LoadingSkeleton';
 
 const StyledItem = styled('div')`
   padding: ${({ theme }) => theme.spacing(0.5, 0.75)};
-  margin: ${({ theme }) => theme.spacing(0.5, 0.5)};
+  margin: 4px 12px 4px 4px;
   border-radius: 4px;
   display: grid;
   gap: ${({ theme }) => theme.spacing(0, 1)};
@@ -25,7 +25,7 @@ const StyledItem = styled('div')`
   transition-property: background color;
 
   &:hover {
-    background: ${({ theme }) => theme.palette.emphasis[50]};
+    background: ${({ theme }) => theme.palette.tokens.text._states.selected};
   }
   &.clickable {
     cursor: pointer;

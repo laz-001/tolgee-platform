@@ -11,14 +11,10 @@ import { useTranslate } from '@tolgee/react';
 
 import LoadingButton from 'tg.component/common/form/LoadingButton';
 import { ArrowDropDown, Stars } from 'tg.component/CustomIcons';
-import { confirmation } from 'tg.hooks/confirmation';
-import { useApiMutation } from 'tg.service/http/useQueryApi';
 import { BatchOperationDialog } from 'tg.views/projects/translations/BatchOperations/OperationsSummary/BatchOperationDialog';
 import { BatchJobModel } from 'tg.views/projects/translations/BatchOperations/types';
-import {
-  useTranslationsActions,
-  useTranslationsSelector,
-} from 'tg.views/projects/translations/context/TranslationsContext';
+import { useTranslationsSelector } from 'tg.views/projects/translations/context/TranslationsContext';
+import { PreviewBatchDialog } from './PreviewBatchDialog';
 
 const StyledArrowButton = styled(Button)`
   padding-left: 6px;
@@ -52,44 +48,9 @@ export const PromptPreviewMenu = ({
 
   const disabled = languageId === undefined;
 
+  const [batchDialogOpen, setBatchDialogOpen] = useState(false);
+
   const [runningOperation, setRunningOperation] = useState<BatchJobModel>();
-
-  const mtTranslate = useApiMutation({
-    url: '/v2/projects/{projectId}/start-batch-job/ai-playground-translate',
-    method: 'post',
-  });
-
-  const { getAllIds, setEdit } = useTranslationsActions();
-
-  const handleRunBatch = async () => {
-    const allIds = await getAllIds();
-    confirmation({
-      title: `Run for ${allIds.length} keys?`,
-      onConfirm() {
-        setEdit(undefined);
-        mtTranslate
-          .mutateAsync({
-            content: {
-              'application/json': {
-                keyIds: allIds,
-                targetLanguageIds: [languageId!],
-                llmPrompt: {
-                  name: '',
-                  template: templateValue,
-                  providerName,
-                },
-              },
-            },
-            path: {
-              projectId,
-            },
-          })
-          .then((data) => {
-            setRunningOperation(data);
-          });
-      },
-    });
-  };
 
   return (
     <>
@@ -139,12 +100,22 @@ export const PromptPreviewMenu = ({
           <MenuItem
             onClick={() => {
               setOpen(false);
-              handleRunBatch();
+              setBatchDialogOpen(true);
             }}
           >
             {t('ai_prompt_preview_on_all', { value: translationsTotal })}
           </MenuItem>
         </Menu>
+      )}
+
+      {batchDialogOpen && (
+        <PreviewBatchDialog
+          onStart={(data) => setRunningOperation(data)}
+          onClose={() => setBatchDialogOpen(false)}
+          providerName={providerName}
+          template={templateValue}
+          projectId={projectId}
+        />
       )}
 
       {runningOperation && (
