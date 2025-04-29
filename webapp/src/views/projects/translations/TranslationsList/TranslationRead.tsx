@@ -132,7 +132,7 @@ export const TranslationRead: React.FC<Props> = ({
         {aiPlaygroundData && (
           <AiPlaygroundPreview
             translation={aiPlaygroundData.translation}
-            contextDescription={aiPlaygroundData.contextDescription}
+            tooltip={aiPlaygroundData.contextDescription}
             isPlural={keyData.keyIsPlural}
             locale={language.tag}
           />

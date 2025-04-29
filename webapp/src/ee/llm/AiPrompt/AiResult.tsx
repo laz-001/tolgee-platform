@@ -1,22 +1,19 @@
-import { Box, Button, ButtonGroup, styled, TextField } from '@mui/material';
-import { useLocalStorageState } from 'tg.hooks/useLocalStorageState';
-import { FieldLabel } from 'tg.component/FormField';
-import { TranslationVisual } from 'tg.views/projects/translations/translationVisual/TranslationVisual';
+import { Box, IconButton, styled, Tooltip } from '@mui/material';
+import { Code02 } from '@untitled-ui/icons-react';
 import { useTranslate } from '@tolgee/react';
 
-const StyledTextField = styled(TextField)`
+import { useLocalStorageState } from 'tg.hooks/useLocalStorageState';
+import { Label } from './Label';
+import { AiPlaygroundPreview } from 'tg.views/projects/translations/translationVisual/AiPlaygroundPreview';
+
+const StyledPre = styled(Box)`
   flex-grow: 1;
-  opacity: 0.5;
-  &:focus-within {
-    opacity: 1;
-  }
-  &:focus-within .icon-button {
-    color: ${({ theme }) => theme.palette.primary.main};
-  }
+  color: ${({ theme }) => theme.palette.text.secondary};
+  white-space: pre-wrap;
 `;
 
 const StyledDescription = styled('div')`
-  font-size: 13px;
+  font-size: 14px;
   color: ${({ theme }) => theme.palette.text.secondary};
 `;
 
@@ -37,60 +34,43 @@ export const AiResult = ({ raw, json, isPlural, locale }: Props) => {
   const mode = json?.output ? _mode : 'raw';
 
   return (
-    <Box display="grid" gap={1}>
-      <Box display="flex" justifyContent="space-between" alignItems="end">
-        <FieldLabel sx={{ margin: 0 }}>
-          {t('ai_prompt_result_label')}
-        </FieldLabel>
-        <ButtonGroup disabled={!json?.output}>
-          <Button
-            size="small"
-            disableElevation
-            color={mode === 'translation' ? 'primary' : 'default'}
-            onClick={() => setMode('translation')}
+    <Box display="grid">
+      <Label
+        rightContent={
+          <Tooltip
+            title={
+              mode === 'translation'
+                ? t('ai_prompt_show_result_raw')
+                : t('ai_prompt_show_result_translation')
+            }
           >
-            Translation
-          </Button>
-          <Button
-            size="small"
-            disableElevation
-            color={mode === 'raw' ? 'primary' : 'default'}
-            onClick={() => setMode('raw')}
-            data-cy="invitation-dialog-type-link-button"
-          >
-            Raw
-          </Button>
-        </ButtonGroup>
-      </Box>
-      {mode === 'raw' ? (
-        <StyledTextField
-          multiline
-          minRows={3}
-          variant="outlined"
-          size="small"
-          value={raw}
-          onChange={(e) => e.preventDefault()}
-          data-cy="translations-comments-output"
-          InputProps={{
-            sx: {
-              padding: '8px 4px 8px 12px',
-              borderRadius: '8px',
-            },
-          }}
-        />
+            <IconButton
+              sx={{ marginY: -1 }}
+              color={mode === 'translation' ? undefined : 'primary'}
+              disabled={!json?.output}
+              onClick={() =>
+                setMode(_mode === 'translation' ? 'raw' : 'translation')
+              }
+            >
+              <Code02 height={20} width={20} />
+            </IconButton>
+          </Tooltip>
+        }
+      >
+        {t('ai_prompt_result_label')}
+      </Label>
+      {!raw && !json ? (
+        <StyledDescription sx={{ fontStyle: 'italic' }}>
+          {t('ai_playground_result_empty')}
+        </StyledDescription>
+      ) : mode === 'raw' ? (
+        <StyledPre>{raw}</StyledPre>
       ) : (
-        <Box
-          border="1px solid lightgray"
-          borderRadius="4px"
-          padding="4px 8px 8px 8px"
-          display="grid"
-          gap={1}
-        >
-          <TranslationVisual
-            maxLines={100}
-            text={json.output ?? ''}
+        <Box display="grid" gap={1}>
+          <AiPlaygroundPreview
             locale={locale}
             isPlural={isPlural}
+            translation={json.output}
           />
           {json.contextDescription && (
             <StyledDescription>{json.contextDescription}</StyledDescription>

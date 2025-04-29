@@ -1,4 +1,5 @@
 import { RefObject, useEffect, useRef } from 'react';
+import { useTranslate } from '@tolgee/react';
 import { minimalSetup } from 'codemirror';
 import { EditorState, Prec } from '@codemirror/state';
 import { EditorView, ViewUpdate, keymap, KeyBinding } from '@codemirror/view';
@@ -17,7 +18,6 @@ import {
   errorPlugin,
   setErrorsEffect,
 } from './utils/codemirrorError';
-import { useTranslate } from '@tolgee/react';
 
 type PromptVariable = components['schemas']['PromptVariableDto'];
 

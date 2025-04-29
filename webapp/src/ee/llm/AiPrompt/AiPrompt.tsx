@@ -7,18 +7,12 @@ import {
   styled,
   Tab,
   Tabs,
-  TextField,
-  Typography,
 } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
-import { ChevronDown, ChevronUp, X } from '@untitled-ui/icons-react';
+import { X } from '@untitled-ui/icons-react';
 
 import { useApiMutation, useApiQuery } from 'tg.service/http/useQueryApi';
-import { EditorHandlebars } from 'tg.component/editor/EditorHandlebars';
-import { EditorWrapper } from 'tg.component/editor/EditorWrapper';
-import { stopBubble } from 'tg.fixtures/eventHandler';
 import { useLocalStorageState } from 'tg.hooks/useLocalStorageState';
-import { FieldLabel } from 'tg.component/FormField';
 import { EditorError } from 'tg.component/editor/utils/codemirrorError';
 import { useTranslationsActions } from 'tg.views/projects/translations/context/TranslationsContext';
 import { components } from 'tg.service/apiSchema.generated';
@@ -30,6 +24,9 @@ import { AiResult } from './AiResult';
 import { PromptLoadMenu } from './PromptLoadMenu';
 import { PromptPreviewMenu } from './PromptPreviewMenu';
 import { PromptSaveMenu } from './PromptSaveMenu';
+import { TabAdvanced } from './TabAdvanced';
+import { AiResultUsage } from './AiResultUsage';
+import { AiRenderedPrompt } from './AiRenderedPrompt';
 
 type ProjectModel = components['schemas']['ProjectModel'];
 type LanguageModel = components['schemas']['LanguageModel'];
@@ -45,17 +42,7 @@ const StyledContainer = styled('div')`
 const StyledMainContent = styled('div')`
   display: grid;
   align-self: start;
-`;
-
-const StyledTextField = styled(TextField)`
-  flex-grow: 1;
-  opacity: 0.5;
-  &:focus-within {
-    opacity: 1;
-  }
-  &:focus-within .icon-button {
-    color: ${({ theme }) => theme.palette.primary.main};
-  }
+  margin-bottom: 50px;
 `;
 
 const StyledHeader = styled('div')`
@@ -128,10 +115,7 @@ export const AiPrompt: React.FC<Props> = (props) => {
     key: `aiPlaygroundLastValue-${projectId}`,
     initial: 'Hi translate from {{source}} to {{target}}',
   });
-  const [expanded, setExpanded] = useLocalStorageState({
-    key: 'aiPlaygroundExpanded',
-    initial: undefined,
-  });
+
   const [provider, setProvider] = useLocalStorageState<string>({
     key: `aiPlaygroundProvider-${projectId}`,
     initial: 'default',
@@ -262,76 +246,29 @@ export const AiPrompt: React.FC<Props> = (props) => {
           </StyledTabs>
         </StyledHeader>
 
-        <Box sx={{ margin: '20px 20px' }}>
-          <FieldLabel>{t('ai_prompt_label')}</FieldLabel>
-          <EditorWrapper onKeyDown={stopBubble()}>
-            <EditorHandlebars
-              minHeight={100}
-              value={value}
-              onChange={setValue}
-              unknownVariableMessage={
-                cellSelected
-                  ? 'Unknown variable'
-                  : 'Select translation to see the value'
-              }
-              shortcuts={[
-                {
-                  key: 'Mod-Enter',
-                  run: () => (handleTestPrompt(), true),
-                },
-              ]}
-              availableVariables={promptVariables.data?.data}
-              errors={errors}
-            />
-          </EditorWrapper>
-        </Box>
+        {tab === 'advanced' ? (
+          <TabAdvanced
+            value={value}
+            onChange={setValue}
+            onRun={handleTestPrompt}
+            availableVariables={promptVariables.data?.data}
+            errors={errors}
+            cellSelected={cellSelected}
+          />
+        ) : null}
 
-        <Box sx={{ margin: '20px', display: 'grid' }}>
+        <Box sx={{ margin: '20px', display: 'grid', gap: 1.5 }}>
           <AiResult
             raw={promptLoadable.data?.result}
             json={promptLoadable.data?.parsedJson}
             isPlural={props.keyData?.keyIsPlural}
             locale={props.language?.tag}
           />
-
-          <Typography variant="caption" minHeight={20}>
-            {usage?.inputTokens && (
-              <>
-                {`tokens: ${usage.inputTokens + (usage.outputTokens ?? 0)}`}
-                {`, credits: ${promptLoadable.data!.price! / 100}`}
-                {typeof usage.cachedTokens === 'number' &&
-                  `, cached: ${usage.cachedTokens}`}
-              </>
-            )}
-          </Typography>
+          <AiResultUsage usage={usage} price={promptLoadable.data?.price} />
         </Box>
 
-        {Boolean(expanded) && (
-          <Box sx={{ margin: '20px', display: 'grid' }}>
-            <FieldLabel> {t('ai_prompt_rendered_label')}</FieldLabel>
-            <StyledTextField
-              multiline
-              variant="outlined"
-              size="small"
-              value={promptLoadable.data?.prompt}
-              onChange={(e) => e.preventDefault()}
-              data-cy="translations-comments-output"
-              InputProps={{
-                sx: {
-                  padding: '8px 4px 8px 12px',
-                  borderRadius: '8px',
-                },
-              }}
-            />
-          </Box>
-        )}
-
-        <Box display="flex" justifyContent="center">
-          <IconButton
-            onClick={() => setExpanded((val) => (val ? undefined : 'true'))}
-          >
-            {expanded ? <ChevronUp /> : <ChevronDown />}
-          </IconButton>
+        <Box sx={{ margin: '20px', display: 'grid' }}>
+          <AiRenderedPrompt data={promptLoadable.data?.prompt} />
         </Box>
       </StyledMainContent>
       <StyledActionsWrapper>

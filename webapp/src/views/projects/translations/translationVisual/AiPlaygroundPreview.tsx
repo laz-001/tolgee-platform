@@ -1,7 +1,7 @@
 import { Box, styled, SxProps, Tooltip, useTheme } from '@mui/material';
 import { Stars } from 'tg.component/CustomIcons';
-import { TranslationVisual } from './TranslationVisual';
 import { wrapIf } from 'tg.fixtures/wrapIf';
+import { TranslationVisual } from './TranslationVisual';
 
 const StyledAiPreview = styled(Box)`
   display: grid;
@@ -18,7 +18,7 @@ const StyledContent = styled('div')`
 
 type Props = {
   translation: string | undefined;
-  contextDescription: string | undefined;
+  tooltip?: React.ReactNode;
   isPlural: boolean;
   locale: string;
   sx?: SxProps;
@@ -26,27 +26,31 @@ type Props = {
 
 export const AiPlaygroundPreview = ({
   translation,
-  contextDescription,
+  tooltip,
   isPlural,
   locale,
   sx,
 }: Props) => {
   const theme = useTheme();
-  return wrapIf(
-    contextDescription,
-    <StyledAiPreview {...{ sx }}>
-      <Stars width={20} height={20} color={theme.palette.secondary.main} />
-      <StyledContent>
-        <TranslationVisual
-          text={translation}
-          isPlural={isPlural}
-          locale={locale}
-          maxLines={3}
-          extraPadding={false}
-        />
-      </StyledContent>
-    </StyledAiPreview>,
-    // @ts-ignore
-    <Tooltip title={contextDescription} />
+  return (
+    <>
+      {wrapIf(
+        tooltip,
+        <StyledAiPreview {...{ sx }}>
+          <Stars width={20} height={20} color={theme.palette.secondary.main} />
+          <StyledContent>
+            <TranslationVisual
+              text={translation}
+              isPlural={isPlural}
+              locale={locale}
+              maxLines={3}
+              extraPadding={false}
+            />
+          </StyledContent>
+        </StyledAiPreview>,
+        // @ts-ignore
+        <Tooltip title={tooltip} />
+      )}
+    </>
   );
 };
