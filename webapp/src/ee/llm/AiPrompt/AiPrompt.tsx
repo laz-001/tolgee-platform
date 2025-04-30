@@ -139,6 +139,9 @@ export const AiPrompt: React.FC<Props> = (props) => {
       projectId,
       promptId: Number(lastOpenPrompt)!,
     },
+    fetchOptions: {
+      disable404Redirect: true,
+    },
     options: {
       enabled: Boolean(lastOpenPrompt),
     },

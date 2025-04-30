@@ -68,6 +68,8 @@ const StyledEditor = styled('div')`
   & .cm-tooltip .header {
     display: flex;
     justify-content: space-between;
+    gap: 12px;
+    align-items: center;
   }
 
   & .cm-tooltip .title {
