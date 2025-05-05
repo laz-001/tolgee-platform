@@ -15,6 +15,7 @@ import {
   useTranslationsActions,
   useTranslationsSelector,
 } from 'tg.views/projects/translations/context/TranslationsContext';
+import { BasicPromptOption } from './TabBasic';
 
 type BatchJobModel = components['schemas']['BatchJobModel'];
 
@@ -22,7 +23,8 @@ type Props = {
   onStart: (data: BatchJobModel) => void;
   onClose: () => void;
   providerName: string;
-  template: string;
+  template: string | undefined;
+  options: BasicPromptOption[] | undefined;
   projectId: number;
   numberOfKeys: number;
 };
@@ -32,6 +34,7 @@ export const PreviewBatchDialog = ({
   onClose,
   providerName,
   template,
+  options,
   projectId,
   numberOfKeys,
 }: Props) => {
@@ -67,6 +70,7 @@ export const PreviewBatchDialog = ({
             llmPrompt: {
               name: '',
               template,
+              options,
               providerName,
             },
           },

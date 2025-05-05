@@ -1,12 +1,13 @@
 package io.tolgee.ee.service.prompt
 
 import io.tolgee.ee.service.prompt.PromptServiceEeImpl.Companion.Variable
+import io.tolgee.model.enums.BasicPromptOption
 import io.tolgee.model.enums.PromptVariableType
 import org.springframework.stereotype.Service
 
 /**
  * Signifies that model should return json, some models have a property for that
- * other just need a strong wording, so it's up to the provider class to deal with this
+ * others just need a strong wording, so it's up to the provider class to deal with this
  */
 const val LLM_MARK_JSON = "[[output_valid_json]]"
 
@@ -19,8 +20,8 @@ class PromptFragmentsService {
       Variable(
         "intro",
         """
-        You are a translator in software localization platform, that strictly follows instructions.
-        Each translation has a translation key, which usually reflects the structure of the app, so similar keys are usually related.
+        You are a translator providing services within a software localization platform that requires strict adherence to instructions.
+        Each translation is associated with a translation key, which typically reflects the structure of the app—so similar keys are often related in meaning.
         """.trimIndent(),
         type = PromptVariableType.FRAGMENT,
       ),
@@ -41,7 +42,7 @@ class PromptFragmentsService {
 
     result.add(
       Variable(
-        "promptCustomization",
+        "projectDescription",
         """
         {{#with project.description}}
         Here is user defined description for the project:
@@ -49,6 +50,16 @@ class PromptFragmentsService {
         {{this}}
         ```
         {{/with}}
+        """.trimIndent(),
+        type = PromptVariableType.FRAGMENT,
+        option = BasicPromptOption.PROJECT_DESCRIPTION,
+      )
+    )
+
+    result.add(
+      Variable(
+        "languageNotes",
+        """
         {{#with target.languageNote}}
         Here is user defined note:
         ```
@@ -57,6 +68,7 @@ class PromptFragmentsService {
         {{/with}}          
         """.trimIndent(),
         type = PromptVariableType.FRAGMENT,
+        option = BasicPromptOption.LANGUAGE_NOTES,
       ),
     )
 
@@ -71,6 +83,7 @@ class PromptFragmentsService {
         {{/with}}
         """.trimIndent(),
         type = PromptVariableType.FRAGMENT,
+        option = BasicPromptOption.TM_SUGGESTIONS
       ),
     )
 
@@ -85,6 +98,7 @@ class PromptFragmentsService {
         {{/with}}
         """.trimIndent(),
         type = PromptVariableType.FRAGMENT,
+        option = BasicPromptOption.KEY_CONTEXT
       ),
     )
 
@@ -133,6 +147,7 @@ class PromptFragmentsService {
         "screenshots",
         """{{screenshots.first}}""",
         type = PromptVariableType.FRAGMENT,
+        option = BasicPromptOption.SCREENSHOTS,
       ),
     )
 

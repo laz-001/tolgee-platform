@@ -27,9 +27,21 @@ import { PromptSaveMenu } from './PromptSaveMenu';
 import { TabAdvanced } from './TabAdvanced';
 import { AiResultUsage } from './AiResultUsage';
 import { AiRenderedPrompt } from './AiRenderedPrompt';
+import { TabBasic } from './TabBasic';
 
 type ProjectModel = components['schemas']['ProjectModel'];
 type LanguageModel = components['schemas']['LanguageModel'];
+type BasicPromptOption = NonNullable<
+  components['schemas']['PromptRunDto']['options']
+>[number];
+
+const DEFAULT_BASIC_OPTIONS: BasicPromptOption[] = [
+  'KEY_CONTEXT',
+  'LANGUAGE_NOTES',
+  'PROJECT_DESCRIPTION',
+  'TM_SUGGESTIONS',
+  'SCREENSHOTS',
+];
 
 const StyledContainer = styled('div')`
   display: grid;
@@ -111,10 +123,37 @@ export const AiPrompt: React.FC<Props> = (props) => {
     key: `aiPlaygroundLastPrompt-${projectId}`,
     initial: undefined,
   });
-  const [value, setValue] = useLocalStorageState<string>({
-    key: `aiPlaygroundLastValue-${projectId}`,
-    initial: 'Hi translate from {{source}} to {{target}}',
+
+  const [_options, _setOptions] = useLocalStorageState({
+    key: `aiPlaygroundLastOptions-${projectId}`,
+    initial: undefined,
   });
+
+  const defaultPrompt = useApiQuery({
+    url: '/v2/projects/{projectId}/prompts/default',
+    method: 'get',
+    path: {
+      projectId,
+    },
+  });
+
+  const [_value, setValue] = useLocalStorageState({
+    key: `aiPlaygroundLastValue-${projectId}`,
+    initial: undefined,
+  });
+
+  const value = _value ?? defaultPrompt.data?.template;
+
+  const options = ((_options && JSON.parse(_options)) ||
+    DEFAULT_BASIC_OPTIONS) as BasicPromptOption[];
+
+  function setOptions(value: BasicPromptOption[] | undefined) {
+    if (value) {
+      _setOptions(JSON.stringify(value));
+    } else {
+      _setOptions(undefined);
+    }
+  }
 
   const [provider, setProvider] = useLocalStorageState<string>({
     key: `aiPlaygroundProvider-${projectId}`,
@@ -122,7 +161,7 @@ export const AiPrompt: React.FC<Props> = (props) => {
   });
   const [errors, setErrors] = useState<EditorError[]>();
 
-  const promptLoadable = useApiMutation({
+  const runLoadable = useApiMutation({
     url: '/v2/projects/{projectId}/prompts/run',
     method: 'post',
     invalidatePrefix: '/v2/projects/{projectId}/ai-playground-result',
@@ -176,17 +215,18 @@ export const AiPrompt: React.FC<Props> = (props) => {
     if (!cellSelected) {
       return;
     }
-    promptLoadable.mutate(
+    runLoadable.mutate(
       {
         path: {
           projectId: props.project.id,
         },
         content: {
           'application/json': {
-            template: value,
+            template: tab === 'advanced' ? value : undefined,
             keyId: props.keyData.keyId,
             targetLanguageId: props.language.id,
             provider,
+            options: tab === 'basic' ? options : undefined,
           },
         },
       },
@@ -207,7 +247,7 @@ export const AiPrompt: React.FC<Props> = (props) => {
     );
   }
 
-  const usage = promptLoadable.data?.usage;
+  const usage = runLoadable.data?.usage;
 
   return (
     <StyledContainer>
@@ -224,6 +264,8 @@ export const AiPrompt: React.FC<Props> = (props) => {
                   );
                   setProvider(item.providerName);
                   setValue(item.template);
+                  setOptions(item.options);
+                  setTab(item.template ? 'advanced' : 'basic');
                 }}
               />
               <IconButton onClick={() => setAiPlayground(undefined)}>
@@ -251,46 +293,50 @@ export const AiPrompt: React.FC<Props> = (props) => {
 
         {tab === 'advanced' ? (
           <TabAdvanced
-            value={value}
+            value={value ?? ''}
             onChange={setValue}
             onRun={handleTestPrompt}
             availableVariables={promptVariables.data?.data}
             errors={errors}
             cellSelected={cellSelected}
           />
-        ) : null}
+        ) : (
+          <TabBasic value={options} onChange={setOptions} />
+        )}
 
         <Box sx={{ margin: '20px', display: 'grid', gap: 1.5 }}>
           <AiResult
-            raw={promptLoadable.data?.result}
-            json={promptLoadable.data?.parsedJson}
+            raw={runLoadable.data?.result}
+            json={runLoadable.data?.parsedJson}
             isPlural={props.keyData?.keyIsPlural}
             locale={props.language?.tag}
           />
-          <AiResultUsage usage={usage} price={promptLoadable.data?.price} />
+          <AiResultUsage usage={usage} price={runLoadable.data?.price} />
         </Box>
 
         <Box sx={{ margin: '20px', display: 'grid' }}>
-          <AiRenderedPrompt data={promptLoadable.data?.prompt} />
+          <AiRenderedPrompt data={runLoadable.data?.prompt} />
         </Box>
       </StyledMainContent>
       <StyledActionsWrapper>
         <PromptPreviewMenu
           projectId={projectId}
           languageId={props.language?.id}
-          templateValue={value}
+          templateValue={tab === 'advanced' ? value : undefined}
+          options={tab === 'basic' ? options : undefined}
           providerName={provider}
           onBatchFinished={() => {
             refetchTranslations();
           }}
           onTestPrompt={handleTestPrompt}
-          loading={promptLoadable.isLoading}
+          loading={runLoadable.isLoading}
         />
         <PromptSaveMenu
           projectId={projectId}
           data={{
-            template: value,
             providerName: provider,
+            template: tab === 'advanced' ? value : undefined,
+            options: tab === 'basic' ? options : undefined,
           }}
           existingPrompt={lastPrompt.data}
         />

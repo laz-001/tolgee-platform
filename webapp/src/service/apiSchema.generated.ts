@@ -3946,17 +3946,31 @@ export interface components {
     };
     PromptDto: {
       name: string;
+      options?: (
+        | "PROJECT_DESCRIPTION"
+        | "LANGUAGE_NOTES"
+        | "TM_SUGGESTIONS"
+        | "KEY_CONTEXT"
+        | "SCREENSHOTS"
+      )[];
       providerName: string;
-      template: string;
+      template?: string;
     };
     PromptModel: {
       /** Format: int64 */
       id: number;
       name: string;
+      options?: (
+        | "PROJECT_DESCRIPTION"
+        | "LANGUAGE_NOTES"
+        | "TM_SUGGESTIONS"
+        | "KEY_CONTEXT"
+        | "SCREENSHOTS"
+      )[];
       /** Format: int64 */
       projectId: number;
       providerName: string;
-      template: string;
+      template?: string;
     };
     PromptResponseDto: {
       parsedJson?: components["schemas"]["JsonNode"];
@@ -3977,10 +3991,17 @@ export interface components {
     PromptRunDto: {
       /** Format: int64 */
       keyId: number;
+      options?: (
+        | "PROJECT_DESCRIPTION"
+        | "LANGUAGE_NOTES"
+        | "TM_SUGGESTIONS"
+        | "KEY_CONTEXT"
+        | "SCREENSHOTS"
+      )[];
       provider: string;
       /** Format: int64 */
       targetLanguageId: number;
-      template: string;
+      template?: string;
     };
     PromptVariableDto: {
       description?: string;

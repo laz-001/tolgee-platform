@@ -7,9 +7,9 @@ import { EditorWrapper } from 'tg.component/editor/EditorWrapper';
 import { EditorError } from 'tg.component/editor/utils/codemirrorError';
 import { stopBubble } from 'tg.fixtures/eventHandler';
 import { components } from 'tg.service/apiSchema.generated';
-import { useUrlSearchState } from 'tg.hooks/useUrlSearchState';
 
 import { Label } from './Label';
+import { useLocalStorageState } from 'tg.hooks/useLocalStorageState';
 
 type PromptVariable = components['schemas']['PromptVariableDto'];
 
@@ -31,8 +31,9 @@ export const TabAdvanced = ({
   errors,
 }: Props) => {
   const { t } = useTranslate();
-  const [hideTip, setHideTip] = useUrlSearchState('aiPlaygroundHidePromptTip', {
-    defaultVal: undefined,
+  const [hideTip, setHideTip] = useLocalStorageState({
+    key: 'aiPlaygroundHidePromptTip',
+    initial: undefined,
   });
 
   return (

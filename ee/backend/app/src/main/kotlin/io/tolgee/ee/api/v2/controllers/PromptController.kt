@@ -6,6 +6,7 @@ import io.tolgee.dtos.request.prompt.PromptRunDto
 import io.tolgee.dtos.response.prompt.PromptResponseDto
 import io.tolgee.ee.api.v2.hateoas.assemblers.PromptModelAssembler
 import io.tolgee.ee.data.prompt.VariablesResponseDto
+import io.tolgee.ee.service.prompt.PromptDefaultService
 import io.tolgee.ee.service.prompt.PromptServiceEeImpl
 import io.tolgee.ee.service.prompt.PromptVariablesService
 import io.tolgee.hateoas.prompt.PromptModel
@@ -39,8 +40,7 @@ class PromptController(
   private val arrayResourcesAssembler: PagedResourcesAssembler<Prompt>,
   private val projectHolder: ProjectHolder,
   private val promptVariablesService: PromptVariablesService,
-  private val aiPlaygroundResultService: AiPlaygroundResultService,
-  private val authenticationFacade: AuthenticationFacade,
+  private val promptDefaultService: PromptDefaultService,
 ) {
   @GetMapping("")
   @RequiresProjectPermissions([Scope.PROMPTS_VIEW])
@@ -97,36 +97,25 @@ class PromptController(
   @PostMapping("run")
   @RequiresProjectPermissions([Scope.PROMPTS_EDIT])
   fun run(
-    @Valid @RequestBody promptRunDto: PromptRunDto,
+    @Valid @RequestBody data: PromptRunDto,
   ): PromptResponseDto {
     val projectId = projectHolder.project.id
-    val userId = authenticationFacade.authenticatedUser.id
-    val prompt = promptService.getPrompt(projectId, promptRunDto)
-    val params = promptService.getLLMParamsFromPrompt(prompt, promptRunDto.keyId)
+    val prompt = promptService.getPrompt(
+      projectId,
+      data.template ?: promptDefaultService.getDefaultPrompt().template!!,
+      data.keyId,
+      data.targetLanguageId,
+      data.provider,
+      data.options,
+    )
+    val params = promptService.getLLMParamsFromPrompt(prompt, data.keyId)
     val organizationId = projectHolder.project.organizationOwnerId
-    val response =
-      promptService.runPrompt(
-        organizationId,
-        params,
-        promptRunDto.provider,
-        LLMProviderPriority.HIGH,
-      )
-    val translation = response.parsedJson?.get("output")?.asText()
-    if (translation != null) {
-      val contextDescription = response.parsedJson?.get("contextDescription")?.asText()
-      aiPlaygroundResultService.removeResults(
-        projectHolder.project.id,
-        userId,
-      )
-      aiPlaygroundResultService.setResult(
-        projectHolder.project.id,
-        userId,
-        promptRunDto.keyId,
-        promptRunDto.targetLanguageId,
-        translation,
-        contextDescription,
-      )
-    }
+    val response = promptService.runPrompt(
+      organizationId,
+      params,
+      data.provider,
+      LLMProviderPriority.HIGH,
+    )
     return PromptResponseDto(
       prompt,
       response.response,

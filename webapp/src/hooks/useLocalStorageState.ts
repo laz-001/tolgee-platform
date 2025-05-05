@@ -24,8 +24,8 @@ export function useLocalStorageState<T extends string | undefined>({
     }
   }
 
-  function setLocalStorageValue(value: string | undefined) {
-    if (value === undefined) {
+  function setLocalStorageValue(value: string | undefined | null) {
+    if (value === undefined || value === null) {
       localStorage.removeItem(key);
     } else {
       localStorage.setItem(key, value);

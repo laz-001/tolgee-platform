@@ -15,6 +15,7 @@ import { BatchOperationDialog } from 'tg.views/projects/translations/BatchOperat
 import { BatchJobModel } from 'tg.views/projects/translations/BatchOperations/types';
 import { useTranslationsSelector } from 'tg.views/projects/translations/context/TranslationsContext';
 import { PreviewBatchDialog } from './PreviewBatchDialog';
+import { BasicPromptOption } from './TabBasic';
 
 const StyledArrowButton = styled(Button)`
   padding-left: 6px;
@@ -25,7 +26,8 @@ const StyledArrowButton = styled(Button)`
 type Props = {
   languageId: number | undefined;
   projectId: number;
-  templateValue: string;
+  templateValue: string | undefined;
+  options: BasicPromptOption[] | undefined;
   providerName: string;
   onBatchFinished: () => void;
   onTestPrompt: () => void;
@@ -36,6 +38,7 @@ export const PromptPreviewMenu = ({
   languageId,
   projectId,
   templateValue,
+  options,
   providerName,
   onBatchFinished,
   onTestPrompt,
@@ -117,6 +120,7 @@ export const PromptPreviewMenu = ({
           onClose={() => setBatchDialogOpen(false)}
           providerName={providerName}
           template={templateValue}
+          options={options}
           projectId={projectId}
         />
       )}

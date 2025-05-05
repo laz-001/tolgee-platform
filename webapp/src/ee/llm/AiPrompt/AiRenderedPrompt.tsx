@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp } from '@untitled-ui/icons-react';
 import { useTranslate } from '@tolgee/react';
 import { useLocalStorageState } from 'tg.hooks/useLocalStorageState';
 
-const StyledDescription = styled('div')`
+const StyledDescription = styled(Box)`
   font-size: 14px;
   color: ${({ theme }) => theme.palette.text.secondary};
   font-style: italic;
@@ -19,6 +19,8 @@ const StyledContent = styled(Box)`
   background: ${({ theme }) => theme.palette.tokens.text._states.hover};
   padding: 12px;
   white-space: pre-wrap;
+  overflow-wrap: break-word;
+  contain: inline-size;
 `;
 
 type Props = {

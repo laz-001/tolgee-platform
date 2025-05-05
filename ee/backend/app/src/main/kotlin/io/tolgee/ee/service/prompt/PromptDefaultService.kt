@@ -14,9 +14,13 @@ class PromptDefaultService {
 
         {{fragment.styleInfo}}
 
-        {{fragment.promptCustomization}}
+        {{fragment.projectDescription}}
+        
+        {{fragment.languageNotes}}
 
         {{fragment.icuInfo}}
+
+        {{fragment.screenshots}}
 
         {{fragment.relatedKeys}}
 

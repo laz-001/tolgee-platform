@@ -18,6 +18,7 @@ import io.tolgee.ee.service.LLMProviderService
 import io.tolgee.exceptions.BadRequestException
 import io.tolgee.exceptions.NotFoundException
 import io.tolgee.model.Prompt
+import io.tolgee.model.enums.BasicPromptOption
 import io.tolgee.model.enums.LLMProviderPriority
 import io.tolgee.model.enums.PromptVariableType
 import io.tolgee.repository.PromptRepository
@@ -66,6 +67,7 @@ class PromptServiceEeImpl(
         template = dto.template,
         project = projectService.get(projectId),
         providerName = dto.providerName,
+        options = dto.options?.toTypedArray(),
       )
     promptRepository.save(prompt)
     return prompt
@@ -99,6 +101,7 @@ class PromptServiceEeImpl(
     prompt.name = dto.name
     prompt.template = dto.template
     prompt.providerName = dto.providerName
+    prompt.options = dto.options?.toTypedArray()
     promptRepository.save(prompt)
     return prompt
   }
@@ -114,10 +117,14 @@ class PromptServiceEeImpl(
   @Transactional
   fun getPrompt(
     projectId: Long,
-    data: PromptRunDto,
+    template: String,
+    keyId: Long,
+    targetLanguageId: Long,
+    provider: String,
+    options: List<BasicPromptOption>? = null
   ): String {
     try {
-      val params = promptVariablesService.getVariables(projectId, data.keyId, data.targetLanguageId)
+      val params = promptVariablesService.getVariables(projectId, keyId, targetLanguageId)
 
       val handlebars = Handlebars()
 
@@ -126,14 +133,19 @@ class PromptServiceEeImpl(
       val fragments = params.find { it.name == "fragment" }?.props
 
       fragments?.forEach {
-        val template = handlebars.compileInline(it.value)
-        it.value = template.apply(paramsForFragments)
+        val included = it.option == null || (options?.contains(it.option) ?: true)
+        if (included) {
+          val renderedTemplate = handlebars.compileInline(it.value)
+          it.value = renderedTemplate.apply(paramsForFragments)
+        } else {
+          it.value = ""
+        }
       }
 
       val finalParams = createVariablesLazyMap(params)
 
-      val template = handlebars.compileInline(data.template)
-      val prompt = template.apply(finalParams)
+      val renderedTemplate = handlebars.compileInline(template)
+      val prompt = renderedTemplate.apply(finalParams)
       // remove excessive newlines and trim
       return prompt.replace(Regex("\n(\\s*\n)+"), "\n\n").trim()
     } catch (e: HandlebarsException) {
@@ -286,7 +298,13 @@ class PromptServiceEeImpl(
     priority: LLMProviderPriority?,
   ): MtValueProvider.MtResult {
     val project = projectService.get(projectId)
-    val prompt = getPrompt(projectId, data)
+    val prompt = getPrompt(
+      projectId,
+      data.template ?: promptDefaultService.getDefaultPrompt().template!!,
+      data.keyId,
+      data.targetLanguageId,
+      data.provider
+    )
     val params = getLLMParamsFromPrompt(prompt, data.keyId)
     val result = runPrompt(project.organizationOwner.id, params, data.provider, priority)
     return getTranslationFromPromptResult(result)
@@ -351,6 +369,7 @@ class PromptServiceEeImpl(
       val description: String? = null,
       val props: MutableList<Variable> = mutableListOf(),
       val type: PromptVariableType? = null,
+      val option: BasicPromptOption? = null,
     ) {
       fun toPromptVariableDto(): PromptVariableDto {
         val computedType =

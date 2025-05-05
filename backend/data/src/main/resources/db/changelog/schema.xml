@@ -4395,4 +4395,9 @@
             <column name="project_id"/>
         </createIndex>
     </changeSet>
+    <changeSet author="stepangranat (generated)" id="1746447396869-1">
+        <addColumn tableName="prompt">
+            <column name="options" type="VARCHAR[]"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
