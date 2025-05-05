@@ -3,9 +3,9 @@ package io.tolgee.dtos.request.prompt
 import io.tolgee.model.enums.BasicPromptOption
 
 data class PromptRunDto(
-  val template: String? = null,
+  val template: String?,
   var keyId: Long,
   var targetLanguageId: Long,
   var provider: String,
-  var options: List<BasicPromptOption>? = null,
+  var options: List<BasicPromptOption>?,
 )

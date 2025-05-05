@@ -15,9 +15,7 @@ import io.tolgee.model.enums.LLMProviderPriority
 import io.tolgee.model.enums.Scope
 import io.tolgee.openApiDocs.OpenApiOrderExtension
 import io.tolgee.security.ProjectHolder
-import io.tolgee.security.authentication.AuthenticationFacade
 import io.tolgee.security.authorization.RequiresProjectPermissions
-import io.tolgee.service.AiPlaygroundResultService
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -100,22 +98,24 @@ class PromptController(
     @Valid @RequestBody data: PromptRunDto,
   ): PromptResponseDto {
     val projectId = projectHolder.project.id
-    val prompt = promptService.getPrompt(
-      projectId,
-      data.template ?: promptDefaultService.getDefaultPrompt().template!!,
-      data.keyId,
-      data.targetLanguageId,
-      data.provider,
-      data.options,
-    )
+    val prompt =
+      promptService.getPrompt(
+        projectId,
+        data.template ?: promptDefaultService.getDefaultPrompt().template!!,
+        data.keyId,
+        data.targetLanguageId,
+        data.provider,
+        data.options,
+      )
     val params = promptService.getLLMParamsFromPrompt(prompt, data.keyId)
     val organizationId = projectHolder.project.organizationOwnerId
-    val response = promptService.runPrompt(
-      organizationId,
-      params,
-      data.provider,
-      LLMProviderPriority.HIGH,
-    )
+    val response =
+      promptService.runPrompt(
+        organizationId,
+        params,
+        data.provider,
+        LLMProviderPriority.HIGH,
+      )
     return PromptResponseDto(
       prompt,
       response.response,

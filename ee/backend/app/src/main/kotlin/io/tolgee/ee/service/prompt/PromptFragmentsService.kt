@@ -53,7 +53,7 @@ class PromptFragmentsService {
         """.trimIndent(),
         type = PromptVariableType.FRAGMENT,
         option = BasicPromptOption.PROJECT_DESCRIPTION,
-      )
+      ),
     )
 
     result.add(
@@ -83,7 +83,7 @@ class PromptFragmentsService {
         {{/with}}
         """.trimIndent(),
         type = PromptVariableType.FRAGMENT,
-        option = BasicPromptOption.TM_SUGGESTIONS
+        option = BasicPromptOption.TM_SUGGESTIONS,
       ),
     )
 
@@ -98,7 +98,7 @@ class PromptFragmentsService {
         {{/with}}
         """.trimIndent(),
         type = PromptVariableType.FRAGMENT,
-        option = BasicPromptOption.KEY_CONTEXT
+        option = BasicPromptOption.KEY_CONTEXT,
       ),
     )
 

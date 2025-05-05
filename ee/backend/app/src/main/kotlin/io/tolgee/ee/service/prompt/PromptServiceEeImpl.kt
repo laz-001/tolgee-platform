@@ -79,7 +79,12 @@ class PromptServiceEeImpl(
   ): PromptDto {
     if (promptId != null) {
       val prompt = promptRepository.findPrompt(projectId, promptId) ?: throw NotFoundException(Message.PROMPT_NOT_FOUND)
-      return PromptDto(prompt.name, template = prompt.template, providerName = prompt.providerName)
+      return PromptDto(
+        prompt.name,
+        template = prompt.template,
+        providerName = prompt.providerName,
+        options = prompt.options?.toList(),
+      )
     } else {
       return getDefaultPrompt()
     }
@@ -121,7 +126,7 @@ class PromptServiceEeImpl(
     keyId: Long,
     targetLanguageId: Long,
     provider: String,
-    options: List<BasicPromptOption>? = null
+    options: List<BasicPromptOption>?,
   ): String {
     try {
       val params = promptVariablesService.getVariables(projectId, keyId, targetLanguageId)
@@ -298,13 +303,15 @@ class PromptServiceEeImpl(
     priority: LLMProviderPriority?,
   ): MtValueProvider.MtResult {
     val project = projectService.get(projectId)
-    val prompt = getPrompt(
-      projectId,
-      data.template ?: promptDefaultService.getDefaultPrompt().template!!,
-      data.keyId,
-      data.targetLanguageId,
-      data.provider
-    )
+    val prompt =
+      getPrompt(
+        projectId,
+        data.template ?: promptDefaultService.getDefaultPrompt().template!!,
+        data.keyId,
+        data.targetLanguageId,
+        data.provider,
+        data.options,
+      )
     val params = getLLMParamsFromPrompt(prompt, data.keyId)
     val result = runPrompt(project.organizationOwner.id, params, data.provider, priority)
     return getTranslationFromPromptResult(result)

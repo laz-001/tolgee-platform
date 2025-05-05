@@ -54,6 +54,7 @@ class LLMTranslationProviderEeImpl(
         keyId = keyId,
         targetLanguageId = targetLanguageId,
         provider = promptDto.providerName,
+        options = promptDto.options,
       )
     return MtMetadata(prompt, promptDto.providerName, keyId, organizationId)
   }

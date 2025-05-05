@@ -15,17 +15,12 @@ import jakarta.persistence.*
 class AiPlaygroundResult(
   @ManyToOne
   var project: Project,
-
   @ManyToOne
   var key: Key? = null,
-
   @ManyToOne
   var language: Language? = null,
-
   @ManyToOne
   var user: UserAccount? = null,
-
   var translation: String? = null,
-
   var contextDescription: String? = null,
 ) : StandardAuditModel()

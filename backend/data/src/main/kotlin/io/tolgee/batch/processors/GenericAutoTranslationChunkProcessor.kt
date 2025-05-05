@@ -31,7 +31,7 @@ class GenericAutoTranslationChunkProcessor(
   private val languageService: LanguageService,
   private val promptService: PromptService,
 ) {
-  open fun process(
+  fun process(
     job: BatchJobDto,
     chunk: List<BatchTranslationTargetItem>,
     coroutineContext: CoroutineContext,
@@ -63,6 +63,7 @@ class GenericAutoTranslationChunkProcessor(
             keyId = key.id,
             targetLanguageId = languageId,
             provider = llmPrompt.providerName,
+            options = llmPrompt.options,
           ),
           priority = LLMProviderPriority.LOW,
         )
