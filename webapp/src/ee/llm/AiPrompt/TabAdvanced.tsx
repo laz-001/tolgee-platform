@@ -1,11 +1,14 @@
-import { Box, Link } from '@mui/material';
+import { Alert, Box, IconButton, Link } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
+import { X } from '@untitled-ui/icons-react';
 
 import { EditorHandlebars } from 'tg.component/editor/EditorHandlebars';
 import { EditorWrapper } from 'tg.component/editor/EditorWrapper';
 import { EditorError } from 'tg.component/editor/utils/codemirrorError';
 import { stopBubble } from 'tg.fixtures/eventHandler';
 import { components } from 'tg.service/apiSchema.generated';
+import { useUrlSearchState } from 'tg.hooks/useUrlSearchState';
+
 import { Label } from './Label';
 
 type PromptVariable = components['schemas']['PromptVariableDto'];
@@ -28,6 +31,10 @@ export const TabAdvanced = ({
   errors,
 }: Props) => {
   const { t } = useTranslate();
+  const [hideTip, setHideTip] = useUrlSearchState('aiPlaygroundHidePromptTip', {
+    defaultVal: undefined,
+  });
+
   return (
     <Box sx={{ margin: '20px 20px' }}>
       <Label
@@ -39,6 +46,20 @@ export const TabAdvanced = ({
       >
         {t('ai_prompt_label')}
       </Label>
+      {!hideTip && (
+        <Alert
+          severity="info"
+          icon={false}
+          sx={{ mb: 1 }}
+          action={
+            <IconButton size="small" onClick={() => setHideTip('true')}>
+              <X width={20} height={20} />
+            </IconButton>
+          }
+        >
+          {t('ai_playground_prompt_tip')}
+        </Alert>
+      )}
       <EditorWrapper onKeyDown={stopBubble()}>
         <EditorHandlebars
           minHeight={100}

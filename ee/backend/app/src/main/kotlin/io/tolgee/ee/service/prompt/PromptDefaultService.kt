@@ -10,8 +10,6 @@ class PromptDefaultService {
       name = "default",
       template =
         """
-        {{! Tolgee prompt is split into multiple fragments }}
-        {{! Hover any variable to see its content }}
         {{fragment.intro}}
 
         {{fragment.styleInfo}}

@@ -1,34 +1,15 @@
 import { useRef, useState } from 'react';
-import {
-  Box,
-  Button,
-  IconButton,
-  Menu,
-  MenuItem,
-  styled,
-  Tooltip,
-} from '@mui/material';
+import { Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import { useTranslate } from '@tolgee/react';
 import { DotsVertical } from '@untitled-ui/icons-react';
 
 import { CompactListSubheader } from 'tg.component/ListComponents';
-import { stopAndPrevent } from 'tg.fixtures/eventHandler';
 import { components } from 'tg.service/apiSchema.generated';
-import { useApiMutation, useApiQuery } from 'tg.service/http/useQueryApi';
+import { useApiQuery } from 'tg.service/http/useQueryApi';
 
 type PromptDto = components['schemas']['PromptDto'];
 
 export type PromptItem = PromptDto & { id?: number };
-
-const StyledCompactButton = styled(Button)`
-  padding: 4px 8px;
-  font-size: 13px;
-  align-self: center;
-  min-height: 0px !important;
-  font-style: normal;
-  font-weight: 500;
-  line-height: normal;
-`;
 
 type Props = {
   onSelect: (prompt: PromptItem) => void;
@@ -56,12 +37,6 @@ export const PromptLoadMenu = ({ onSelect, projectId }: Props) => {
     path: {
       projectId,
     },
-  });
-
-  const deletePrompt = useApiMutation({
-    url: '/v2/projects/{projectId}/prompts/{promptId}',
-    method: 'delete',
-    invalidatePrefix: '/v2/projects/{projectId}/prompts',
   });
 
   const prompts: (PromptDto & { id?: number })[] = [];
@@ -98,27 +73,8 @@ export const PromptLoadMenu = ({ onSelect, projectId }: Props) => {
                 setOpen(false);
                 onSelect(item);
               }}
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
             >
-              <Box>{item.name}</Box>
-              {typeof item.id === 'number' && (
-                <StyledCompactButton
-                  variant="outlined"
-                  color="error"
-                  size="small"
-                  onClick={stopAndPrevent(() =>
-                    deletePrompt.mutate({
-                      path: { projectId, promptId: item.id! },
-                    })
-                  )}
-                >
-                  Delete
-                </StyledCompactButton>
-              )}
+              {item.name}
             </MenuItem>
           ))}
         </Menu>
