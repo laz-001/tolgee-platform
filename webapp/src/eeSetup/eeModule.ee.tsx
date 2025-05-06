@@ -70,6 +70,7 @@ export { TrialAnnouncement } from '../ee/billing/component/topBar/TrialAnnouncem
 export { TrialChip } from '../ee/billing/component/topBar/TrialChip';
 export { TaskInfoMessage } from '../ee/task/components/TaskInfoMessage';
 export { AiPrompt } from '../ee/llm/AiPrompt/AiPrompt';
+export { AiCustomization } from '../ee/llm/AiCustomization/AiCustomization';
 
 export const billingMenuItems = [
   BillingMenuItem,

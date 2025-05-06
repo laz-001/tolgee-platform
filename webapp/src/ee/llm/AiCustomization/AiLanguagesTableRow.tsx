@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { components } from 'tg.service/apiSchema.generated';
-import { TABLE_FIRST_CELL } from '../tableStyles';
-import { LanguageItem } from '../LanguageItem';
+import { TABLE_FIRST_CELL } from 'tg.component/languages/tableStyles';
+import { LanguageItem } from 'tg.component/languages/LanguageItem';
 import { IconButton, styled } from '@mui/material';
 import { Plus, Edit02 } from '@untitled-ui/icons-react';
 import { AiLanguageDescriptionDialog } from './AiLanguageDescriptionDialog';

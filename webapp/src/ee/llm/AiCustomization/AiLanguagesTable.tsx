@@ -3,7 +3,10 @@ import { useTranslate } from '@tolgee/react';
 import { LabelHint } from 'tg.component/common/LabelHint';
 import { components } from 'tg.service/apiSchema.generated';
 
-import { StyledLanguageTable, TABLE_TOP_ROW } from '../tableStyles';
+import {
+  StyledLanguageTable,
+  TABLE_TOP_ROW,
+} from 'tg.component/languages/tableStyles';
 import { AiLanguagesTableRow } from './AiLanguagesTableRow';
 
 type LanguageModel = components['schemas']['LanguageModel'];

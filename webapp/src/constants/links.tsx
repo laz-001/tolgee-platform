@@ -349,6 +349,10 @@ export class LINKS {
 
   static PROJECT_DASHBOARD = LINKS.PROJECT;
 
+  static PROJECT_AI = Link.ofParent(LINKS.PROJECT, 'ai');
+
+  static PROJECT_CONTEXT_DATA = Link.ofParent(LINKS.PROJECT_AI, 'context-data');
+
   static PROJECT_INTEGRATE = Link.ofParent(LINKS.PROJECT, 'integrate');
 
   /**
@@ -372,8 +376,6 @@ export class LINKS {
   static PROJECT_LANGUAGES = Link.ofParent(LINKS.PROJECT, 'languages');
 
   static PROJECT_LANGUAGES_MT = Link.ofParent(LINKS.PROJECT_LANGUAGES, 'mt');
-
-  static PROJECT_LANGUAGES_AI = Link.ofParent(LINKS.PROJECT_LANGUAGES, 'ai');
 
   static PROJECT_EDIT_LANGUAGE = Link.ofParent(
     LINKS.PROJECT_LANGUAGES,

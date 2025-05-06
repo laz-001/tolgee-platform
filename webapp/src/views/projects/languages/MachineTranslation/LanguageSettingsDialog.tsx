@@ -22,13 +22,13 @@ import { useConfig } from 'tg.globalContext/helpers';
 import { useFormalityTranslation } from 'tg.translationTools/useFormalityTranslation';
 import LoadingButton from 'tg.component/common/form/LoadingButton';
 
-import { LanguageItem } from '../LanguageItem';
+import { LanguageItem } from '../../../../component/languages/LanguageItem';
 import {
   StyledLanguageTable,
   TABLE_CENTERED,
   TABLE_FIRST_CELL,
   TABLE_TOP_ROW,
-} from '../tableStyles';
+} from '../../../../component/languages/tableStyles';
 import { FormalityType, RowData, ServiceType } from './types';
 import { ServiceLabel } from './ServiceLabel';
 import { PrimaryServiceLabel } from './PrimaryServiceLabel';

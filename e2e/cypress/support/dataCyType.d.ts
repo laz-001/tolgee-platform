@@ -94,6 +94,8 @@ declare namespace DataCy {
         "ai-customization-project-description-edit" |
         "ai-languages-description" |
         "ai-languages-description-edit" |
+        "ai-menu-context-data" |
+        "ai-menu-prompts" |
         "api-key-expiry-info" |
         "api-key-list-item" |
         "api-key-list-item-delete-button" |
@@ -316,7 +318,6 @@ declare namespace DataCy {
         "languages-create-cancel-prepared-button" |
         "languages-create-customize-button" |
         "languages-flag-selector-open-button" |
-        "languages-menu-ai-prompt-customization" |
         "languages-menu-machine-translation" |
         "languages-menu-project-languages" |
         "languages-modify-apply-button" |
@@ -459,6 +460,7 @@ declare namespace DataCy {
         "project-member-revoke-button" |
         "project-members-invitation-item" |
         "project-menu-item" |
+        "project-menu-item-ai" |
         "project-menu-item-dashboard" |
         "project-menu-item-developer" |
         "project-menu-item-export" |

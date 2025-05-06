@@ -14,7 +14,7 @@ import { confirmDiscardUnsaved } from 'tg.hooks/confirmation';
 import { useProject } from 'tg.hooks/useProject';
 import { components } from 'tg.service/apiSchema.generated';
 import { useApiMutation } from 'tg.service/http/useQueryApi';
-import { LanguageItem } from '../LanguageItem';
+import { LanguageItem } from 'tg.component/languages/LanguageItem';
 import { AiTips } from './AiTips';
 
 type LanguageModel = components['schemas']['LanguageModel'];

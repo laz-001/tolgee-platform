@@ -20,6 +20,7 @@ import { DeveloperView } from './developer/DeveloperView';
 import { TaskRedirect } from './TaskRedirect';
 import { routes } from 'tg.ee';
 import { IntegrateView } from './integrate/IntegrateView';
+import { AiView } from './ai/AiView';
 
 export const ProjectRouter = () => {
   const match = useRouteMatch();
@@ -72,6 +73,10 @@ export const ProjectRouter = () => {
 
         <Route path={LINKS.PROJECT_DEVELOPER.template}>
           <DeveloperView />
+        </Route>
+
+        <Route path={LINKS.PROJECT_AI.template}>
+          <AiView />
         </Route>
 
         <Route path={LINKS.GO_TO_PROJECT_ACTIVITY_DETAIL.template}>
