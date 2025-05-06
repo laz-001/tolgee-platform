@@ -112,7 +112,7 @@ class PromptFragmentsService {
         for {{ target.language }}:
         {{this}}
         
-        Please include exactly these forms in the response exactly in this order: {{exactForms}}. So it will look like this:
+        Please include exactly these forms in the response exactly in this order: {{target.exactForms}}. So it will look like this:
         ```
         {{target.exampleIcuPlural}}
         ```
