@@ -13,6 +13,8 @@ import io.tolgee.batch.request.SetKeysNamespaceRequest
 import io.tolgee.batch.request.SetTranslationsStateStateRequest
 import io.tolgee.batch.request.TagKeysRequest
 import io.tolgee.batch.request.UntagKeysRequest
+import io.tolgee.component.enabledFeaturesProvider.EnabledFeaturesProvider
+import io.tolgee.constants.Feature
 import io.tolgee.constants.Message
 import io.tolgee.exceptions.BadRequestException
 import io.tolgee.hateoas.batch.BatchJobModel
@@ -44,7 +46,8 @@ class StartBatchJobController(
   private val authenticationFacade: AuthenticationFacade,
   private val batchJobModelAssembler: BatchJobModelAssembler,
   private val aiPlaygroundResultService: AiPlaygroundResultService,
-) {
+  private val enabledFeaturesProvider: EnabledFeaturesProvider,
+  ) {
   @PostMapping(value = ["/pre-translate-by-tm"])
   @Operation(
     summary = "Pre-translate by TM",
@@ -97,6 +100,12 @@ class StartBatchJobController(
     @Valid @RequestBody
     data: MachineTranslationRequest,
   ): BatchJobModel {
+    if (data.llmPrompt?.template !== null) {
+      enabledFeaturesProvider.checkFeatureEnabled(
+        projectHolder.project.organizationOwnerId,
+        Feature.AI_PROMPT_CUSTOMIZATION,
+      )
+    }
     securityService.checkKeyIdsExistAndIsFromProject(data.keyIds, projectHolder.project.id)
     aiPlaygroundResultService.removeResults(projectHolder.project.id, authenticationFacade.authenticatedUserEntity.id)
     return batchJobService.startJob(

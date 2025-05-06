@@ -7,9 +7,9 @@ import { EditorWrapper } from 'tg.component/editor/EditorWrapper';
 import { EditorError } from 'tg.component/editor/utils/codemirrorError';
 import { stopBubble } from 'tg.fixtures/eventHandler';
 import { components } from 'tg.service/apiSchema.generated';
+import { useLocalStorageState } from 'tg.hooks/useLocalStorageState';
 
 import { Label } from './Label';
-import { useLocalStorageState } from 'tg.hooks/useLocalStorageState';
 
 type PromptVariable = components['schemas']['PromptVariableDto'];
 

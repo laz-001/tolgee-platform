@@ -1,6 +1,8 @@
 package io.tolgee.ee.api.v2.controllers
 
 import io.swagger.v3.oas.annotations.Operation
+import io.tolgee.component.enabledFeaturesProvider.EnabledFeaturesProvider
+import io.tolgee.constants.Feature
 import io.tolgee.dtos.request.prompt.PromptDto
 import io.tolgee.dtos.request.prompt.PromptRunDto
 import io.tolgee.dtos.response.prompt.PromptResponseDto
@@ -39,6 +41,7 @@ class PromptController(
   private val projectHolder: ProjectHolder,
   private val promptVariablesService: PromptVariablesService,
   private val promptDefaultService: PromptDefaultService,
+  private val enabledFeaturesProvider: EnabledFeaturesProvider,
 ) {
   @GetMapping("")
   @RequiresProjectPermissions([Scope.PROMPTS_VIEW])
@@ -61,6 +64,13 @@ class PromptController(
   fun createPrompt(
     @RequestBody @Valid dto: PromptDto,
   ): PromptModel {
+    if (dto.template !== null) {
+      enabledFeaturesProvider.checkFeatureEnabled(
+        projectHolder.project.organizationOwnerId,
+        Feature.AI_PROMPT_CUSTOMIZATION,
+      )
+    }
+
     val result = promptService.createPrompt(projectHolder.project.id, dto)
     return promptModelAssembler.toModel(result)
   }
@@ -80,6 +90,12 @@ class PromptController(
     @PathVariable promptId: Long,
     @RequestBody @Valid dto: PromptDto,
   ): PromptModel {
+    if (dto.template !== null) {
+      enabledFeaturesProvider.checkFeatureEnabled(
+        projectHolder.project.organizationOwnerId,
+        Feature.AI_PROMPT_CUSTOMIZATION,
+      )
+    }
     val result = promptService.updatePrompt(projectHolder.project.id, promptId, dto)
     return promptModelAssembler.toModel(result)
   }
@@ -97,6 +113,13 @@ class PromptController(
   fun run(
     @Valid @RequestBody data: PromptRunDto,
   ): PromptResponseDto {
+    if (data.template !== null) {
+      enabledFeaturesProvider.checkFeatureEnabled(
+        projectHolder.project.organizationOwnerId,
+        Feature.AI_PROMPT_CUSTOMIZATION,
+      )
+    }
+
     val projectId = projectHolder.project.id
     val prompt =
       promptService.getPrompt(

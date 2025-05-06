@@ -32,6 +32,7 @@ type Props = {
   onBatchFinished: () => void;
   onTestPrompt: () => void;
   loading?: boolean;
+  disabled?: boolean;
 };
 
 export const PromptPreviewMenu = ({
@@ -43,6 +44,7 @@ export const PromptPreviewMenu = ({
   onBatchFinished,
   onTestPrompt,
   loading,
+  disabled,
 }: Props) => {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -51,7 +53,7 @@ export const PromptPreviewMenu = ({
     (c) => c.translationsTotal ?? 0
   );
 
-  const disabled = languageId === undefined;
+  const oneDisabled = languageId === undefined;
 
   const [batchDialogOpen, setBatchDialogOpen] = useState(false);
 
@@ -63,7 +65,7 @@ export const PromptPreviewMenu = ({
         <Tooltip
           enterDelay={1000}
           title={
-            disabled
+            oneDisabled
               ? t('ai_prompt_preview_disabled_hint')
               : t('ai_prompt_preview_hint')
           }
@@ -71,7 +73,7 @@ export const PromptPreviewMenu = ({
         >
           <span>
             <LoadingButton
-              disabled={disabled}
+              disabled={disabled || oneDisabled}
               loading={loading}
               startIcon={<Stars height={18} />}
               ref={buttonRef}
@@ -81,7 +83,11 @@ export const PromptPreviewMenu = ({
             </LoadingButton>
           </span>
         </Tooltip>
-        <StyledArrowButton onClick={() => setOpen(true)} ref={buttonRef as any}>
+        <StyledArrowButton
+          disabled={disabled}
+          onClick={() => setOpen(true)}
+          ref={buttonRef as any}
+        >
           <ArrowDropDown />
         </StyledArrowButton>
       </ButtonGroup>

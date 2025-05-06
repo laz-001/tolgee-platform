@@ -29,6 +29,8 @@ import { AiResultUsage } from './AiResultUsage';
 import { AiRenderedPrompt } from './AiRenderedPrompt';
 import { TabBasic } from './TabBasic';
 import { PromptRename } from './PromptRename';
+import { DisabledFeatureBanner } from 'tg.component/common/DisabledFeatureBanner';
+import { useEnabledFeatures } from 'tg.globalContext/helpers';
 
 type ProjectModel = components['schemas']['ProjectModel'];
 type LanguageModel = components['schemas']['LanguageModel'];
@@ -122,6 +124,7 @@ export const AiPrompt: React.FC<Props> = (props) => {
   const projectId = props.project.id;
   const { t } = useTranslate();
   const { refetchTranslations } = useTranslationsActions();
+  const { isEnabled } = useEnabledFeatures();
   const [_, setAiPlayground] = useUrlSearchState(
     QUERY.TRANSLATIONS_AI_PLAYGROUND,
     {
@@ -200,6 +203,13 @@ export const AiPrompt: React.FC<Props> = (props) => {
     },
   });
 
+  const featureEnabled =
+    tab === 'advanced' ? isEnabled('AI_PROMPT_CUSTOMIZATION') : true;
+
+  const canBeRenamed =
+    lastPrompt.data &&
+    (isEnabled('AI_PROMPT_CUSTOMIZATION') || !lastPrompt.data?.template);
+
   const providersLoadable = useApiQuery({
     url: '/v2/organizations/{organizationId}/llm-providers/all-available',
     method: 'get',
@@ -270,7 +280,7 @@ export const AiPrompt: React.FC<Props> = (props) => {
           <StyledTitle>
             <StyledPromptName>
               <StyledTitleText>{lastPromptName}</StyledTitleText>
-              {lastPrompt.data && (
+              {canBeRenamed && (
                 <PromptRename
                   data={lastPrompt.data}
                   className="editButton"
@@ -288,7 +298,11 @@ export const AiPrompt: React.FC<Props> = (props) => {
                   setProvider(item.providerName);
                   setValue(item.template);
                   setOptions(item.options);
-                  setTab(item.template ? 'advanced' : 'basic');
+                  if (!item.id && !isEnabled('AI_PROMPT_CUSTOMIZATION')) {
+                    setTab('basic');
+                  } else {
+                    setTab(item.template ? 'advanced' : 'basic');
+                  }
                 }}
               />
               <IconButton onClick={() => setAiPlayground(undefined)}>
@@ -313,33 +327,44 @@ export const AiPrompt: React.FC<Props> = (props) => {
             <StyledTab label={t('ai_prompt_tab_advanced')} value="advanced" />
           </StyledTabs>
         </StyledHeader>
-
         {tab === 'advanced' ? (
-          <TabAdvanced
-            value={value ?? ''}
-            onChange={setValue}
-            onRun={handleTestPrompt}
-            availableVariables={promptVariables.data?.data}
-            errors={errors}
-            cellSelected={cellSelected}
-          />
+          featureEnabled && (
+            <TabAdvanced
+              value={value ?? ''}
+              onChange={setValue}
+              onRun={handleTestPrompt}
+              availableVariables={promptVariables.data?.data}
+              errors={errors}
+              cellSelected={cellSelected}
+            />
+          )
         ) : (
           <TabBasic value={options} onChange={setOptions} />
         )}
-
-        <Box sx={{ margin: '20px', display: 'grid', gap: 1.5 }}>
-          <AiResult
-            raw={runLoadable.data?.result}
-            json={runLoadable.data?.parsedJson}
-            isPlural={props.keyData?.keyIsPlural}
-            locale={props.language?.tag}
-          />
-          <AiResultUsage usage={usage} price={runLoadable.data?.price} />
-        </Box>
-
-        <Box sx={{ margin: '20px', display: 'grid' }}>
-          <AiRenderedPrompt data={runLoadable.data?.prompt} />
-        </Box>
+        {featureEnabled && (
+          <Box sx={{ margin: '20px', display: 'grid', gap: 1.5 }}>
+            <AiResult
+              raw={runLoadable.data?.result}
+              json={runLoadable.data?.parsedJson}
+              isPlural={props.keyData?.keyIsPlural}
+              locale={props.language?.tag}
+            />
+            <AiResultUsage usage={usage} price={runLoadable.data?.price} />
+          </Box>
+        )}
+        {featureEnabled && (
+          <Box sx={{ margin: '20px', display: 'grid' }}>
+            <AiRenderedPrompt data={runLoadable.data?.prompt} />
+          </Box>
+        )}
+        {!featureEnabled && (
+          <Box sx={{ margin: '20px', display: 'grid' }}>
+            <DisabledFeatureBanner
+              actionOnBottom
+              customMessage={t('ai_customization_not_enabled_message')}
+            />
+          </Box>
+        )}
       </StyledMainContent>
       <StyledActionsWrapper>
         <PromptPreviewMenu
@@ -353,6 +378,7 @@ export const AiPrompt: React.FC<Props> = (props) => {
           }}
           onTestPrompt={handleTestPrompt}
           loading={runLoadable.isLoading}
+          disabled={!featureEnabled}
         />
         <PromptSaveMenu
           projectId={projectId}
@@ -362,6 +388,7 @@ export const AiPrompt: React.FC<Props> = (props) => {
             options: tab === 'basic' ? options : undefined,
           }}
           existingPrompt={lastPrompt.data}
+          disabled={!featureEnabled}
         />
       </StyledActionsWrapper>
     </StyledContainer>

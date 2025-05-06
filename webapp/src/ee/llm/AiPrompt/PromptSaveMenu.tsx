@@ -30,9 +30,15 @@ type Props = {
   projectId: number;
   data: Omit<PromptModel, 'projectId' | 'id' | 'name'>;
   existingPrompt?: PromptModel;
+  disabled?: boolean;
 };
 
-export const PromptSaveMenu = ({ projectId, data, existingPrompt }: Props) => {
+export const PromptSaveMenu = ({
+  projectId,
+  data,
+  existingPrompt,
+  disabled,
+}: Props) => {
   const [open, setOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
@@ -57,6 +63,7 @@ export const PromptSaveMenu = ({ projectId, data, existingPrompt }: Props) => {
       {existingPrompt ? (
         <ButtonGroup variant="contained" size="small" color="primary">
           <LoadingButton
+            disabled={disabled}
             loading={updatePrompt.isLoading}
             onClick={() => {
               updatePrompt.mutate({
@@ -70,6 +77,7 @@ export const PromptSaveMenu = ({ projectId, data, existingPrompt }: Props) => {
             {t('ai_prompt_save_label')}
           </LoadingButton>
           <StyledArrowButton
+            disabled={disabled}
             onClick={() => setOpen(true)}
             ref={buttonRef as any}
           >
@@ -83,6 +91,7 @@ export const PromptSaveMenu = ({ projectId, data, existingPrompt }: Props) => {
           color="primary"
           ref={buttonRef}
           onClick={() => setCreateOpen(true)}
+          disabled={disabled}
         >
           {t('ai_prompt_save_as_new_label')}
         </LoadingButton>
