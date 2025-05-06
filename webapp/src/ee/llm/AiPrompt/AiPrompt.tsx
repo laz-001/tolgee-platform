@@ -28,6 +28,7 @@ import { TabAdvanced } from './TabAdvanced';
 import { AiResultUsage } from './AiResultUsage';
 import { AiRenderedPrompt } from './AiRenderedPrompt';
 import { TabBasic } from './TabBasic';
+import { PromptRename } from './PromptRename';
 
 type ProjectModel = components['schemas']['ProjectModel'];
 type LanguageModel = components['schemas']['LanguageModel'];
@@ -68,11 +69,24 @@ const StyledTitle = styled('div')`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  &:hover .editButton {
+    opacity: 1;
+  }
+  .editButton {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
 `;
 
 const StyledTitleText = styled('div')`
   font-size: 20px;
   font-weight: 400;
+`;
+
+const StyledPromptName = styled('div')`
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const StyledTab = styled(Tab)`
@@ -254,7 +268,16 @@ export const AiPrompt: React.FC<Props> = (props) => {
       <StyledMainContent>
         <StyledHeader>
           <StyledTitle>
-            <StyledTitleText>{lastPromptName}</StyledTitleText>
+            <StyledPromptName>
+              <StyledTitleText>{lastPromptName}</StyledTitleText>
+              {lastPrompt.data && (
+                <PromptRename
+                  data={lastPrompt.data}
+                  className="editButton"
+                  projectId={projectId}
+                />
+              )}
+            </StyledPromptName>
             <Box display="flex" alignItems="center">
               <PromptLoadMenu
                 projectId={props.project.id}

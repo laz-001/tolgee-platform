@@ -467,6 +467,11 @@ export class Validation {
       name: Yup.string().min(3).required(),
       email: Yup.string().min(3).required(),
     });
+
+  static readonly PROMPT_RENAME = () =>
+    Yup.object().shape({
+      name: Yup.string().required(),
+    });
 }
 
 let GLOBAL_VALIDATION_DEBOUNCE_TIMER: any = undefined;
