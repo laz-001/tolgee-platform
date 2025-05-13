@@ -78,9 +78,7 @@ jobs:
             "server-app:runStandardJob2Tests",
             "server-app:runWebsocketTests",
             "server-app:runWithoutEeTests",
-            "ee-test:test",
-            "data:test",
-            "security:test",
+            "server-app:runDataEeSecurityTests"
           ]
     steps:
       - uses: actions/checkout@v3

@@ -228,6 +228,24 @@ tasks.register('runWithoutEeTests', Test) {
     rootProject.setTestRetry(it)
 }
 
+tasks.register('runDataEeSecurityTests', Test) {
+    outputs.upToDateWhen { false }
+    useJUnitPlatform()
+    maxHeapSize = "4096m"
+    testLogging {
+        events = ["passed", "failed", "skipped"]
+    }
+    rootProject.setTestRetry(it)
+    
+    // Aggregate test classes and classpaths from the three modules
+    def dataTest = project(':data').sourceSets.test
+    def eeTest = project(':ee-app').sourceSets.test
+    def securityTest = project(':security').sourceSets.test
+
+    testClassesDirs = files(dataTest.output.classesDirs, eeTest.output.classesDirs, securityTest.output.classesDirs)
+    classpath = files(dataTest.runtimeClasspath, eeTest.runtimeClasspath, securityTest.runtimeClasspath)
+}
+
 // Register a new Gradle test task that supports splitting test execution across CI jobs
 tasks.register('standardJobTests', Test) {
     outputs.upToDateWhen { false }
