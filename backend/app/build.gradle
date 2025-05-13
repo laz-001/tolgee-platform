@@ -210,6 +210,53 @@ tasks.register('runStandardTests', Test) {
     rootProject.setTestRetry(it)
 }
 
+import org.gradle.api.tasks.testing.TestDescriptor
+
+// Custom class to filter tests based on class name hash
+class HashBasedTestFilter {
+    static boolean shouldRunInSet1(TestDescriptor descriptor) {
+        return Math.abs(descriptor.className.hashCode() % 2) == 0
+    }
+    
+    static boolean shouldRunInSet2(TestDescriptor descriptor) {
+        return Math.abs(descriptor.className.hashCode() % 2) == 1
+    }
+}
+
+tasks.register('runStandardSet1Tests', Test) {
+    outputs.upToDateWhen { false }
+    useJUnitPlatform {
+        excludeTags "contextRecreating", "websocket"
+    }
+    maxHeapSize = "4096m"
+    rootProject.setTestRetry(it)
+    
+    // Only run tests where class name hash % 2 == 0
+    filter {
+        // Simpler approach using onlyIf
+        onlyIf { descriptor ->
+            return HashBasedTestFilter.shouldRunInSet1(descriptor)
+        }
+    }
+}
+
+tasks.register('runStandardSet2Tests', Test) {
+    outputs.upToDateWhen { false }
+    useJUnitPlatform {
+        excludeTags "contextRecreating", "websocket"
+    }
+    maxHeapSize = "4096m"
+    rootProject.setTestRetry(it)
+    
+    // Only run tests where class name hash % 2 == 1
+    filter {
+        // Simpler approach using onlyIf
+        onlyIf { descriptor ->
+            return HashBasedTestFilter.shouldRunInSet2(descriptor)
+        }
+    }
+}
+
 tasks.register('runWebsocketTests', Test) {
     outputs.upToDateWhen { false }
     useJUnitPlatform {
